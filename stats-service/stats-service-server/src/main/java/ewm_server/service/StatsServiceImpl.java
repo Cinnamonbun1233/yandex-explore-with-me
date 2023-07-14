@@ -36,7 +36,7 @@ public class StatsServiceImpl implements StatsService {
             } else {
                 return statsRepo.getStatsForDates(parseDateTime(start), parseDateTime(end));
             }
-        } else if (unique == null && uris != null) {
+        } else if (unique == null) {
             return statsRepo.getStatsForDatesAndUris(parseDateTime(start), parseDateTime(end), uris);
         } else {
             if (Boolean.parseBoolean(unique)) {
