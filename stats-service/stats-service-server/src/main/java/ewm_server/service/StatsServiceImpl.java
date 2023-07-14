@@ -7,6 +7,7 @@ import ewm_server.repo.StatsRepo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -24,6 +25,7 @@ public class StatsServiceImpl implements StatsService {
     }
 
     @Override
+    @Transactional
     public void saveRecord(StatsRequestDto request) {
         log.info("RECORD SAVED");
         statsRepo.save(StatsMapper.mapRequestToModel(request));
