@@ -4,6 +4,7 @@ import ewm_dto.domain_dto.StatsRequestDto;
 import ewm_dto.domain_dto.StatsResponseDto;
 import ewm_server.mapper.StatsMapper;
 import ewm_server.repo.StatsRepo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+@Slf4j
 @Service
 public class StatsServiceImpl implements StatsService {
     private final static DateTimeFormatter REQUEST_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -23,6 +25,7 @@ public class StatsServiceImpl implements StatsService {
 
     @Override
     public void saveRecord(StatsRequestDto request) {
+        log.info("RECORD SAVED");
         statsRepo.save(StatsMapper.mapRequestToModel(request));
     }
 
