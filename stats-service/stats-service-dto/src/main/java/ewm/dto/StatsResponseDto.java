@@ -1,14 +1,17 @@
-package ewm_dto;
+package ewm.dto;
 
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class StatsRequestDto {
+public class StatsResponseDto {
     String app;
     String uri;
-    String ip;
-    String timestamp;
+    Long hits;
 }

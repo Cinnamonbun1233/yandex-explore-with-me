@@ -1,9 +1,9 @@
-package ewm_server.service;
+package ewm.server.service;
 
-import ewm_dto.StatsRequestDto;
-import ewm_dto.StatsResponseDto;
-import ewm_server.mapper.StatsMapper;
-import ewm_server.repo.StatsRepo;
+import ewm.dto.StatsRequestDto;
+import ewm.dto.StatsResponseDto;
+import ewm.server.mapper.StatsMapper;
+import ewm.server.repo.StatsRepo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -1,7 +1,7 @@
-package ewm_server.mapper;
+package ewm.server.mapper;
 
-import ewm_dto.StatsRequestDto;
-import ewm_server.model.StatsRecord;
+import ewm.dto.StatsRequestDto;
+import ewm.server.model.StatsRecord;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

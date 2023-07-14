@@ -1,7 +1,7 @@
-package ewm_server.service;
+package ewm.server.service;
 
-import ewm_dto.StatsRequestDto;
-import ewm_dto.StatsResponseDto;
+import ewm.dto.StatsRequestDto;
+import ewm.dto.StatsResponseDto;
 
 import java.util.List;
 

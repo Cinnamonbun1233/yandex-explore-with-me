@@ -1,4 +1,4 @@
-package ewm_server;
+package ewm.server;
 
 import org.springframework.web.bind.annotation.RestController;
 

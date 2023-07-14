@@ -1,8 +1,8 @@
-package ewm_server.controller;
+package ewm.server.controller;
 
-import ewm_dto.StatsRequestDto;
-import ewm_dto.StatsResponseDto;
-import ewm_server.service.StatsService;
+import ewm.dto.StatsRequestDto;
+import ewm.dto.StatsResponseDto;
+import ewm.server.service.StatsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

@@ -1,7 +1,7 @@
-package ewm_server.repo;
+package ewm.server.repo;
 
-import ewm_dto.StatsResponseDto;
-import ewm_server.model.StatsRecord;
+import ewm.dto.StatsResponseDto;
+import ewm.server.model.StatsRecord;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,8 +12,7 @@ import java.util.List;
 
 @Repository
 public interface StatsRepo extends JpaRepository<StatsRecord, Long> {
-
-    @Query("SELECT new ewm_dto.StatsResponseDto(r.app, r.uri, COUNT(r.uri)) " +
+    @Query("SELECT new ewm.dto.StatsResponseDto(r.app, r.uri, COUNT(r.uri)) " +
             "FROM StatsRecord as r " +
             "WHERE r.timestamp BETWEEN :start AND :end " +
             "GROUP BY r.app, r.uri " +
@@ -21,7 +20,7 @@ public interface StatsRepo extends JpaRepository<StatsRecord, Long> {
     List<StatsResponseDto> getStatsForDates(@Param("start") LocalDateTime start,
                                             @Param("end") LocalDateTime end);
 
-    @Query("SELECT new ewm_dto.StatsResponseDto(r.app, r.uri, COUNT(r.uri)) " +
+    @Query("SELECT new ewm.dto.StatsResponseDto(r.app, r.uri, COUNT(r.uri)) " +
             "FROM StatsRecord as r " +
             "WHERE r.timestamp BETWEEN :start AND :end " +
             "AND r.uri IN :uris " +
@@ -31,7 +30,7 @@ public interface StatsRepo extends JpaRepository<StatsRecord, Long> {
                                                    @Param("end") LocalDateTime end,
                                                    @Param("uris") String[] uris);
 
-    @Query("SELECT new ewm_dto.StatsResponseDto(r.app, r.uri, COUNT(DISTINCT r.ip)) " +
+    @Query("SELECT new ewm.dto.StatsResponseDto(r.app, r.uri, COUNT(DISTINCT r.ip)) " +
             "FROM StatsRecord as r " +
             "WHERE r.timestamp BETWEEN :start AND :end " +
             "GROUP BY r.app, r.uri " +
@@ -39,7 +38,7 @@ public interface StatsRepo extends JpaRepository<StatsRecord, Long> {
     List<StatsResponseDto> getStatsForDatesWithUniqueIp(@Param("start") LocalDateTime start,
                                                         @Param("end") LocalDateTime end);
 
-    @Query("SELECT new ewm_dto.StatsResponseDto(r.app, r.uri, COUNT(DISTINCT r.ip)) " +
+    @Query("SELECT new ewm.dto.StatsResponseDto(r.app, r.uri, COUNT(DISTINCT r.ip)) " +
             "FROM StatsRecord as r " +
             "WHERE r.timestamp BETWEEN :start AND :end " +
             "AND r.uri IN :uris " +
