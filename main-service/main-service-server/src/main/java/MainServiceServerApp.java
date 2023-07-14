@@ -3,7 +3,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@ComponentScan("ewm_client")
+@ComponentScan("ewm_server")
 public class MainServiceServerApp {
     public static void main(String[] args) {
         SpringApplication.run(MainServiceServerApp.class, args);
