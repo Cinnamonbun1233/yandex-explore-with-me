@@ -1,8 +1,8 @@
 package ewm_client.controller;
 
 import ewm_client.client.StatsClient;
-import ewm_dto.domain_dto.StatsRequestDto;
-import ewm_dto.domain_dto.StatsResponseDto;
+import ewm_dto.StatsRequestDto;
+import ewm_dto.StatsResponseDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;

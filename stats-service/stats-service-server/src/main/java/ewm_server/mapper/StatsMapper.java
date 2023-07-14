@@ -1,6 +1,6 @@
 package ewm_server.mapper;
 
-import ewm_dto.domain_dto.StatsRequestDto;
+import ewm_dto.StatsRequestDto;
 import ewm_server.model.StatsRecord;
 
 import java.time.LocalDateTime;

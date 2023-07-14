@@ -1,4 +1,4 @@
-package ewm_dto.domain_dto;
+package ewm_dto;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

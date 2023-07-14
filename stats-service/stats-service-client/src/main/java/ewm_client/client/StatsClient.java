@@ -1,7 +1,7 @@
 package ewm_client.client;
 
-import ewm_dto.domain_dto.StatsRequestDto;
-import ewm_dto.domain_dto.StatsResponseDto;
+import ewm_dto.StatsRequestDto;
+import ewm_dto.StatsResponseDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
