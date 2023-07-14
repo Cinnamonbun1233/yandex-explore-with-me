@@ -22,6 +22,6 @@ public class StatsRecord {
     String uri;
     @Column(name = "ip")
     String ip;
-    @Column(name = "timestamp")
+    @Column(name = "time_stamp")
     LocalDateTime timestamp;
 }
