@@ -18,8 +18,8 @@ public class StatsClientController {
     }
 
     @PostMapping(value = "/hit")
-    public Mono<Void> addHit(@RequestBody StatsRequestDto request) {
-        return statsClient.saveRecord(request);
+    public Mono<Void> addHit(@RequestBody StatsRequestDto statsRequestDto) {
+        return statsClient.saveRecord(statsRequestDto);
     }
 
     @GetMapping("/stats")

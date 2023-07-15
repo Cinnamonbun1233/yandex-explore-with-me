@@ -6,7 +6,7 @@ import ewm.dto.StatsResponseDto;
 import java.util.List;
 
 public interface StatsService {
-    void saveRecord(StatsRequestDto request);
+    void saveRecord(StatsRequestDto statsRequestDto);
 
     List<StatsResponseDto> getStats(String start, String end, String[] uris, String unique);
 }

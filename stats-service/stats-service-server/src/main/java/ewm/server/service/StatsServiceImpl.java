@@ -13,8 +13,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-@Slf4j
 @Service
+@Slf4j
 public class StatsServiceImpl implements StatsService {
     private static final DateTimeFormatter REQUEST_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final StatsRepo statsRepo;
@@ -26,9 +26,9 @@ public class StatsServiceImpl implements StatsService {
 
     @Override
     @Transactional
-    public void saveRecord(StatsRequestDto request) {
+    public void saveRecord(StatsRequestDto statsRequestDto) {
         log.info("RECORD SAVED");
-        statsRepo.save(StatsMapper.mapRequestToModel(request));
+        statsRepo.save(StatsMapper.mapRequestToModel(statsRequestDto));
     }
 
     @Override

@@ -12,15 +12,17 @@ import java.util.Optional;
 
 @Service
 public class StatsClient {
-    private final WebClient client = WebClient.create();
     @Value("${stats-service-server.url}")
     private String baseUrl;
+    private final WebClient webClient = WebClient.create();
 
-    public Mono<Void> saveRecord(StatsRequestDto request) {
-        return client.post()
+    public Mono<Void> saveRecord(StatsRequestDto statsRequestDto) {
+        return webClient
+                .post()
                 .uri(String.format("%s/hit", baseUrl))
-                .bodyValue(request)
-                .retrieve().bodyToMono(Void.class);
+                .bodyValue(statsRequestDto)
+                .retrieve()
+                .bodyToMono(Void.class);
     }
 
     public Flux<StatsResponseDto> getStats(String start, String end, String[] uris, String unique) {
@@ -33,7 +35,8 @@ public class StatsClient {
 
     private Flux<StatsResponseDto> getStatsWithUri(String start, String end, String[] uris, String unique) {
         Optional<String> uniqueOpt = Optional.ofNullable(unique);
-        return client.get()
+        return webClient
+                .get()
                 .uri(uriBuilder -> uriBuilder
                         .path(String.format("%s/stats", baseUrl))
                         .queryParam("start", start)
@@ -41,18 +44,21 @@ public class StatsClient {
                         .queryParam("uris", uris)
                         .queryParamIfPresent("unique", uniqueOpt)
                         .build())
-                .retrieve().bodyToFlux(StatsResponseDto.class);
+                .retrieve()
+                .bodyToFlux(StatsResponseDto.class);
     }
 
     private Flux<StatsResponseDto> getStatsWithoutUri(String start, String end, String unique) {
         Optional<String> uniqueOpt = Optional.ofNullable(unique);
-        return client.get()
+        return webClient
+                .get()
                 .uri(uriBuilder -> uriBuilder
                         .path(String.format("%s/stats", baseUrl))
                         .queryParam("start", start)
                         .queryParam("end", end)
                         .queryParamIfPresent("unique", uniqueOpt)
                         .build())
-                .retrieve().bodyToFlux(StatsResponseDto.class);
+                .retrieve()
+                .bodyToFlux(StatsResponseDto.class);
     }
 }

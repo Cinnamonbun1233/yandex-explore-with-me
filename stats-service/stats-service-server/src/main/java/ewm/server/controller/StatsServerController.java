@@ -18,8 +18,8 @@ public class StatsServerController {
     }
 
     @PostMapping(value = "/hit")
-    public void addHit(@RequestBody StatsRequestDto request) {
-        statsService.saveRecord(request);
+    public void addHit(@RequestBody StatsRequestDto statsRequestDto) {
+        statsService.saveRecord(statsRequestDto);
     }
 
     @GetMapping("/stats")
