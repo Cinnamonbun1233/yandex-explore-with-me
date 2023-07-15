@@ -23,10 +23,10 @@ public class StatsClientController {
     }
 
     @GetMapping("/stats")
-    public Flux<StatsResponseDto> getStats(@RequestParam("start") String start,
-                                           @RequestParam("end") String end,
+    public Flux<StatsResponseDto> getStats(@RequestParam("start") String statsPeriodStart,
+                                           @RequestParam("end") String statsPeriodEnd,
                                            @RequestParam(value = "uris", required = false) String[] uris,
                                            @RequestParam(value = "unique", required = false) String unique) {
-        return statsClient.getStats(start, end, uris, unique);
+        return statsClient.getStats(statsPeriodStart, statsPeriodEnd, uris, unique);
     }
 }

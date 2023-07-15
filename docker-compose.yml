@@ -9,8 +9,8 @@ services:
       - "9090:9090"
     depends_on:
       - stats-server
-#    environment:
-#      - TZ=GMT
+    environment:
+      - TZ=Europe/Moscow
 
   stats-server:
     build: stats-service/stats-service-server
@@ -25,7 +25,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/ewm
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
-#      - TZ=GMT
+      - TZ=Europe/Moscow
 
   stats-db:
     image: postgres:14-alpine
@@ -37,7 +37,7 @@ services:
       - POSTGRES_DB=ewm
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-#      - TZ=GMT
+      - TZ=Europe/Moscow
 
   ewm-service:
     build: main-service/main-service-server
@@ -52,7 +52,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5433/ewm_main
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
-#      - TZ=GMT
+      - TZ=Europe/Moscow
 
   ewm-db:
     image: postgres:14-alpine
@@ -64,4 +64,4 @@ services:
       - POSTGRES_DB=ewm_main
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
-#      - TZ=GMT
+      - TZ=Europe/Moscow

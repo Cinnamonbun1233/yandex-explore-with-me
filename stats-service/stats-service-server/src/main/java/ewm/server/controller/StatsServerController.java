@@ -23,10 +23,10 @@ public class StatsServerController {
     }
 
     @GetMapping("/stats")
-    public List<StatsResponseDto> getStats(@RequestParam("start") String start,
-                                           @RequestParam("end") String end,
+    public List<StatsResponseDto> getStats(@RequestParam("start") String statsPeriodStart,
+                                           @RequestParam("end") String statsPeriodEnd,
                                            @RequestParam(value = "uris", required = false) String[] uris,
                                            @RequestParam(value = "unique", required = false) String unique) {
-        return statsService.getStats(start, end, uris, unique);
+        return statsService.getStats(statsPeriodStart, statsPeriodEnd, uris, unique);
     }
 }
