@@ -1,13 +1,11 @@
 package ewm.server.controller;
 
-import ewm.dto.DateTimeFormatterFactory;
 import ewm.dto.StatsRequestDto;
 import ewm.dto.StatsResponseDto;
 import ewm.server.service.StatsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -29,8 +27,6 @@ public class StatsServerController {
                                            @RequestParam("end") String statsPeriodEnd,
                                            @RequestParam(value = "uris", required = false) String[] uris,
                                            @RequestParam(value = "unique", required = false) String unique) {
-        LocalDateTime statsPeriodStartLdt = LocalDateTime.parse(statsPeriodStart, DateTimeFormatterFactory.getDefaultDateTimeFormatter());
-        LocalDateTime statsPeriodEndLdt = LocalDateTime.parse(statsPeriodEnd, DateTimeFormatterFactory.getDefaultDateTimeFormatter());
-        return statsService.getStats(statsPeriodStartLdt, statsPeriodEndLdt, uris, unique);
+        return statsService.getStats(statsPeriodStart, statsPeriodEnd, uris, unique);
     }
 }
