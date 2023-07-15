@@ -9,8 +9,6 @@ services:
       - "9090:9090"
     depends_on:
       - stats-server
-#    environment:
-#      - TZ=Europe/Moscow
 
   stats-server:
     build: stats-service/stats-service-server
@@ -25,7 +23,6 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/ewm
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
-#      - TZ=Europe/Moscow
 
   stats-db:
     image: postgres:14-alpine
@@ -37,31 +34,32 @@ services:
       - POSTGRES_DB=ewm
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-#      - TZ=Europe/Moscow
 
-  ewm-service:
-    build: main-service/main-service-server
-    image: main-service-server
-    container_name: ewm-main-server
-    hostname: main-server
-    ports:
-      - "8080:8080"
-    depends_on:
-      - ewm-db
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5433/ewm_main
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=postgres
-#      - TZ=Europe/Moscow
+#  ewm-service:
+#    build: main-service/main-service-server
+#    image: main-service-server
+#    container_name: ewm-main-server
+#    hostname: main-server
+#    ports:
+#      - "8080:8080"
+#    depends_on:
+#      - ewm-db
+#    healthcheck:
+#      timeout: 10s
+#    environment:
+#      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5433/ewm_main
+#      - SPRING_DATASOURCE_USERNAME=postgres
+#      - SPRING_DATASOURCE_PASSWORD=postgres
 
-  ewm-db:
-    image: postgres:14-alpine
-    container_name: ewm-main-db
-    hostname: ewm-db
-    ports:
-      - "6542:5433"
-    environment:
-      - POSTGRES_DB=ewm_main
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_USER=postgres
-#      - TZ=Europe/Moscow
+#  ewm-db:
+#    image: postgres:14-alpine
+#    container_name: ewm-main-db
+#    hostname: ewm-db
+#    ports:
+#      - "6542:5433"
+#    healthcheck:
+#      timeout: 10s
+#    environment:
+#      - POSTGRES_DB=ewm_main
+#      - POSTGRES_PASSWORD=postgres
+#      - POSTGRES_USER=postgres
