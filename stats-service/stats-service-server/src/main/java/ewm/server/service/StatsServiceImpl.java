@@ -32,22 +32,22 @@ public class StatsServiceImpl implements StatsService {
     }
 
     @Override
-    public List<StatsResponseDto> getStats(String start, String end, String[] uris, String unique) {
+    public List<StatsResponseDto> getStats(LocalDateTime statsPeriodStartLdt, LocalDateTime statsPeriodEndLdt, String[] uris, String unique) {
         if (unique == null && uris == null) {
-            return statsRepo.getStatsForDates(parseDateTime(start), parseDateTime(end));
+            return statsRepo.getStatsForDates(statsPeriodStartLdt, statsPeriodEndLdt);
         } else if (unique != null && uris == null) {
             if (Boolean.parseBoolean(unique)) {
-                return statsRepo.getStatsForDatesWithUniqueIp(parseDateTime(start), parseDateTime(end));
+                return statsRepo.getStatsForDatesWithUniqueIp(statsPeriodStartLdt, statsPeriodEndLdt);
             } else {
-                return statsRepo.getStatsForDates(parseDateTime(start), parseDateTime(end));
+                return statsRepo.getStatsForDates(statsPeriodStartLdt, statsPeriodEndLdt);
             }
         } else if (unique == null) {
-            return statsRepo.getStatsForDatesAndUris(parseDateTime(start), parseDateTime(end), uris);
+            return statsRepo.getStatsForDatesAndUris(statsPeriodStartLdt, statsPeriodEndLdt, uris);
         } else {
             if (Boolean.parseBoolean(unique)) {
-                return statsRepo.getStatsForDatesAndUrisWithUniqueIp(parseDateTime(start), parseDateTime(end), uris);
+                return statsRepo.getStatsForDatesAndUrisWithUniqueIp(statsPeriodStartLdt, statsPeriodEndLdt, uris);
             } else {
-                return statsRepo.getStatsForDatesAndUris(parseDateTime(start), parseDateTime(end), uris);
+                return statsRepo.getStatsForDatesAndUris(statsPeriodStartLdt, statsPeriodEndLdt, uris);
             }
         }
     }
