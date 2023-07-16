@@ -13,8 +13,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-@Service
 @Slf4j
+@Service
 public class StatsServiceImpl implements StatsService {
     private static final DateTimeFormatter REQUEST_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final StatsRepo statsRepo;
@@ -32,23 +32,11 @@ public class StatsServiceImpl implements StatsService {
     }
 
     @Override
-    public List<StatsResponseDto> getStats(String start, String end, String[] uris, String unique) {
-        if (unique == null && uris == null) {
-            return statsRepo.getStatsForDates(parseDateTime(start), parseDateTime(end));
-        } else if (unique != null && uris == null) {
-            if (Boolean.parseBoolean(unique)) {
-                return statsRepo.getStatsForDatesWithUniqueIp(parseDateTime(start), parseDateTime(end));
-            } else {
-                return statsRepo.getStatsForDates(parseDateTime(start), parseDateTime(end));
-            }
-        } else if (unique == null) {
-            return statsRepo.getStatsForDatesAndUris(parseDateTime(start), parseDateTime(end), uris);
+    public List<StatsResponseDto> getStats(String start, String end, List<String> uris, Boolean unique) {
+        if (Boolean.TRUE.equals(unique)) {
+            return statsRepo.getStatsForDatesAndUrisWithUniqueIp(parseDateTime(start), parseDateTime(end), uris);
         } else {
-            if (Boolean.parseBoolean(unique)) {
-                return statsRepo.getStatsForDatesAndUrisWithUniqueIp(parseDateTime(start), parseDateTime(end), uris);
-            } else {
-                return statsRepo.getStatsForDatesAndUris(parseDateTime(start), parseDateTime(end), uris);
-            }
+            return statsRepo.getStatsForDatesAndUris(parseDateTime(start), parseDateTime(end), uris);
         }
     }
 

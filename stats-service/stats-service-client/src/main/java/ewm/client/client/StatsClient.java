@@ -8,6 +8,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -25,16 +26,16 @@ public class StatsClient {
                 .bodyToMono(Void.class);
     }
 
-    public Flux<StatsResponseDto> getStats(String start, String end, String[] uris, String unique) {
-        if (uris == null) {
+    public Flux<StatsResponseDto> getStats(String start, String end, List<String> uris, Boolean unique) {
+        if (uris == null || uris.isEmpty()) {
             return getStatsWithoutUri(start, end, unique);
         } else {
             return getStatsWithUri(start, end, uris, unique);
         }
     }
 
-    private Flux<StatsResponseDto> getStatsWithUri(String start, String end, String[] uris, String unique) {
-        Optional<String> uniqueOpt = Optional.ofNullable(unique);
+    private Flux<StatsResponseDto> getStatsWithUri(String start, String end, List<String> uris, Boolean unique) {
+        Optional<Boolean> uniqueOpt = Optional.ofNullable(unique);
         return webClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
@@ -48,8 +49,8 @@ public class StatsClient {
                 .bodyToFlux(StatsResponseDto.class);
     }
 
-    private Flux<StatsResponseDto> getStatsWithoutUri(String start, String end, String unique) {
-        Optional<String> uniqueOpt = Optional.ofNullable(unique);
+    private Flux<StatsResponseDto> getStatsWithoutUri(String start, String end, Boolean unique) {
+        Optional<Boolean> uniqueOpt = Optional.ofNullable(unique);
         return webClient
                 .get()
                 .uri(uriBuilder -> uriBuilder

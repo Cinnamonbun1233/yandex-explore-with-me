@@ -25,8 +25,8 @@ public class StatsServerController {
     @GetMapping("/stats")
     public List<StatsResponseDto> getStats(@RequestParam("start") String statsPeriodStart,
                                            @RequestParam("end") String statsPeriodEnd,
-                                           @RequestParam(value = "uris", required = false) String[] uris,
-                                           @RequestParam(value = "unique", required = false) String unique) {
+                                           @RequestParam(value = "uris", required = false) List<String> uris,
+                                           @RequestParam(value = "unique", required = false) Boolean unique) {
         return statsService.getStats(statsPeriodStart, statsPeriodEnd, uris, unique);
     }
 }

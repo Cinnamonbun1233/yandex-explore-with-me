@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @RestController
 public class StatsClientController {
     private final StatsClient statsClient;
@@ -25,8 +27,8 @@ public class StatsClientController {
     @GetMapping("/stats")
     public Flux<StatsResponseDto> getStats(@RequestParam("start") String statsPeriodStart,
                                            @RequestParam("end") String statsPeriodEnd,
-                                           @RequestParam(value = "uris", required = false) String[] uris,
-                                           @RequestParam(value = "unique", required = false) String unique) {
+                                           @RequestParam(value = "uris", required = false) List<String> uris,
+                                           @RequestParam(value = "unique", required = false) Boolean unique) {
         return statsClient.getStats(statsPeriodStart, statsPeriodEnd, uris, unique);
     }
 }

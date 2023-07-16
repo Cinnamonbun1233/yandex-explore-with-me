@@ -8,5 +8,5 @@ import java.util.List;
 public interface StatsService {
     void saveRecord(StatsRequestDto statsRequestDto);
 
-    List<StatsResponseDto> getStats(String start, String end, String[] uris, String unique);
+    List<StatsResponseDto> getStats(String start, String end, List<String> uris, Boolean unique);
 }
