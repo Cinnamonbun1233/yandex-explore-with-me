@@ -1,0 +1,46 @@
+package ewm.server.service;
+
+import ewm.dto.StatsRequestDto;
+import ewm.dto.StatsResponseDto;
+import ewm.server.mapper.StatsMapper;
+import ewm.server.repo.StatsRepo;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
+@Slf4j
+@Service
+public class StatsServiceImpl implements StatsService {
+    private static final DateTimeFormatter REQUEST_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private final StatsRepo statsRepo;
+
+    @Autowired
+    public StatsServiceImpl(StatsRepo statsRepo) {
+        this.statsRepo = statsRepo;
+    }
+
+    @Override
+    @Transactional
+    public void saveRecord(StatsRequestDto statsRequestDto) {
+        log.info("RECORD SAVED");
+        statsRepo.save(StatsMapper.mapRequestToModel(statsRequestDto));
+    }
+
+    @Override
+    public List<StatsResponseDto> getStats(String start, String end, List<String> uris, Boolean unique) {
+        if (Boolean.TRUE.equals(unique)) {
+            return statsRepo.getStatsForDatesAndUrisWithUniqueIp(parseDateTime(start), parseDateTime(end), uris);
+        } else {
+            return statsRepo.getStatsForDatesAndUris(parseDateTime(start), parseDateTime(end), uris);
+        }
+    }
+
+    private LocalDateTime parseDateTime(String dateTime) {
+        return LocalDateTime.parse(dateTime, REQUEST_TIME_FORMAT);
+    }
+}
