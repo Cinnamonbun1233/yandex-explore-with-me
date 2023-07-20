@@ -1,5 +1,7 @@
 package ewm.server.model.event;
 
+import ewm.server.model.category.Category;
+import ewm.server.model.user.User;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,6 +14,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "events")
@@ -54,8 +57,8 @@ public class Event {
     @OneToOne
     @JoinColumn(name = "location_id", referencedColumnName = "id")
     Location location;
-    @OneToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
     User initiator;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")

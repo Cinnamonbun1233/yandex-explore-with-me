@@ -1,5 +1,6 @@
 package ewm.server.model.event;
 
+import ewm.server.model.user.User;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,8 +24,8 @@ public class ParticipationRequest {
     LocalDateTime created;
     @Enumerated(EnumType.STRING)
     RequestStatus requestStatus;
-    @OneToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @ManyToOne
+    @JoinColumn(name = "user_id")
     User requester;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id")

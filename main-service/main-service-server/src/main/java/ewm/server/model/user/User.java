@@ -14,6 +14,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Entity
 @Table(name = "users", schema = "public",
@@ -39,8 +40,16 @@ public class User {
     @NotNull
     @Length(min = 6, max = 254)
     String email;
-    @OneToOne(mappedBy = "initiator")
-    Event event;
-    @OneToOne(mappedBy = "requester")
-    ParticipationRequest request;
+    @OneToMany(
+            targetEntity = Event.class,
+            mappedBy = "initiator",
+            fetch = FetchType.LAZY
+    )
+    List<Event> events;
+    @OneToMany(
+            targetEntity = ParticipationRequest.class,
+            mappedBy = "requester",
+            fetch = FetchType.LAZY
+    )
+    List<ParticipationRequest> requests;
 }
