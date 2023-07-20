@@ -1,5 +1,6 @@
 package ewm.server.service;
 
+import ewm.server.exception.UserNotFoundException;
 import ewm.server.model.User;
 import ewm.server.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public void deleteUserById(Long userId) {
+        checkIfUserExists(userId);
         userRepo.deleteById(userId);
     }
 
@@ -43,5 +45,11 @@ public class UserServiceImpl implements UserService {
 
     private List<User> getAllUsers(Pageable request) {
         return userRepo.findAll(request).getContent();
+    }
+
+    private void checkIfUserExists(Long userId) {
+        if(userRepo.findById(userId).isEmpty()) {
+            throw new UserNotFoundException("User not found");
+        }
     }
 }

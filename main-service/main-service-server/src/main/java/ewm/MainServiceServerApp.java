@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @SpringBootApplication
 @EnableJpaRepositories
 @EnableTransactionManagement
+//@ComponentScan("ewm/server")
 @EntityScan("ewm/server")
 public class MainServiceServerApp {
     public static void main(String[] args) {
