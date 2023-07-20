@@ -1,6 +1,6 @@
-package ewm.server.service;
+package ewm.server.service.category;
 
-import ewm.server.model.Category;
+import ewm.server.model.category.Category;
 
 import java.util.List;
 

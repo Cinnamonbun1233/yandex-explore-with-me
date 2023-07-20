@@ -1,6 +1,6 @@
-package ewm.server.service;
+package ewm.server.service.user;
 
-import ewm.server.model.User;
+import ewm.server.model.user.User;
 
 import java.util.List;
 

@@ -1,7 +1,7 @@
-package ewm.server.controller;
+package ewm.server.controller.category;
 
-import ewm.server.model.Category;
-import ewm.server.service.CategoryService;
+import ewm.server.model.category.Category;
+import ewm.server.service.category.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

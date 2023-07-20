@@ -1,8 +1,8 @@
-package ewm.server.service;
+package ewm.server.service.user;
 
 import ewm.server.exception.UserNotFoundException;
-import ewm.server.model.User;
-import ewm.server.repo.UserRepo;
+import ewm.server.model.user.User;
+import ewm.server.repo.user.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

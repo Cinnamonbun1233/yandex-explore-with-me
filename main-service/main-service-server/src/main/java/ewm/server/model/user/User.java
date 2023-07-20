@@ -1,4 +1,4 @@
-package ewm.server.model;
+package ewm.server.model.user;
 
 import lombok.AccessLevel;
 import lombok.Getter;

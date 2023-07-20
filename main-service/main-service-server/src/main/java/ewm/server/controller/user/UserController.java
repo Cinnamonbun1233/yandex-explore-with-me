@@ -1,7 +1,7 @@
-package ewm.server.controller;
+package ewm.server.controller.user;
 
-import ewm.server.model.User;
-import ewm.server.service.UserService;
+import ewm.server.model.user.User;
+import ewm.server.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

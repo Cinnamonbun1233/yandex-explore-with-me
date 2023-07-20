@@ -1,6 +1,6 @@
-package ewm.server.repo;
+package ewm.server.repo.category;
 
-import ewm.server.model.Category;
+import ewm.server.model.category.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

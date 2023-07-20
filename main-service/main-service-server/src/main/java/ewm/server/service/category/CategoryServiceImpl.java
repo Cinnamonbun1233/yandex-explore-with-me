@@ -1,8 +1,8 @@
-package ewm.server.service;
+package ewm.server.service.category;
 
 import ewm.server.exception.CategoryNotFoundException;
-import ewm.server.model.Category;
-import ewm.server.repo.CategoryRepo;
+import ewm.server.model.category.Category;
+import ewm.server.repo.category.CategoryRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
