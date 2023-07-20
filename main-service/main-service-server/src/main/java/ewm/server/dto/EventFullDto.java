@@ -6,8 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
-import java.time.LocalDateTime;
-
 @Data
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -15,15 +13,15 @@ public class EventFullDto {
     Long id;
     String annotation;
     CategoryDto category;
-    Integer confirmedRequests;
-    LocalDateTime createdOn;
+    int confirmedRequests;
+    String createdOn;
     String description;
-    LocalDateTime eventDate;
+    String eventDate;
     UserShortDto initiator;
     LocationDto location;
     Boolean paid;
-    Integer participationLimit;
-    LocalDateTime publishedOn;
+    int participantLimit;
+    String publishedOn;
     Boolean requestModeration;
     EventStatus state;
     String title;
