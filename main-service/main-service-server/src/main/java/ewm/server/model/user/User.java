@@ -1,5 +1,7 @@
 package ewm.server.model.user;
 
+import ewm.server.model.event.Event;
+import ewm.server.model.event.ParticipationRequest;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -37,4 +39,8 @@ public class User {
     @NotNull
     @Length(min = 6, max = 254)
     String email;
+    @OneToOne(mappedBy = "initiator")
+    Event event;
+    @OneToOne(mappedBy = "requester")
+    ParticipationRequest request;
 }
