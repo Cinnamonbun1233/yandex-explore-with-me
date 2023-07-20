@@ -1,4 +1,4 @@
-package ewm.server.service.event;
+package ewm.server.service.request;
 
 import ewm.server.dto.request.ParticipationRequestDto;
 import ewm.server.exception.EventNotFoundException;
@@ -7,7 +7,7 @@ import ewm.server.mapper.RequestMapper;
 import ewm.server.model.event.ParticipationRequest;
 import ewm.server.model.event.RequestStatus;
 import ewm.server.repo.event.EventRepo;
-import ewm.server.repo.event.RequestRepo;
+import ewm.server.repo.request.RequestRepo;
 import ewm.server.repo.user.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

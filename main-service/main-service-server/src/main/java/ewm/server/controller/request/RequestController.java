@@ -1,4 +1,4 @@
-package ewm.server.request;
+package ewm.server.controller.request;
 
 import ewm.server.dto.request.ParticipationRequestDto;
 import ewm.server.service.request.RequestService;
@@ -10,12 +10,10 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/users/{userId}/requests")
 public class RequestController {
     private final RequestService requestService;
-
     @Autowired
     public RequestController(RequestService requestService) {
         this.requestService = requestService;
     }
-
     @PostMapping
     public ResponseEntity<ParticipationRequestDto> addRequest(@PathVariable("userId") Long userId,
                                                               @RequestParam("eventId") Long eventId) {

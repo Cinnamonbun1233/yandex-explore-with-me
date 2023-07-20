@@ -1,4 +1,4 @@
-package ewm.server.repo.event;
+package ewm.server.repo.request;
 
 import ewm.server.model.event.ParticipationRequest;
 import org.springframework.data.jpa.repository.JpaRepository;

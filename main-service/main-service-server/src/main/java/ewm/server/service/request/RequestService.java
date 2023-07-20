@@ -1,4 +1,4 @@
-package ewm.server.service.event;
+package ewm.server.service.request;
 
 import ewm.server.dto.request.ParticipationRequestDto;
 
