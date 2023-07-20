@@ -1,4 +1,4 @@
-package ewm.server.dto;
+package ewm.server.dto.category;
 
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -8,7 +8,7 @@ import lombok.experimental.FieldDefaults;
 @Data
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class LocationDto {
-    Double lon;
-    Double lat;
+public class CategoryDto {
+    Long id;
+    String name;
 }

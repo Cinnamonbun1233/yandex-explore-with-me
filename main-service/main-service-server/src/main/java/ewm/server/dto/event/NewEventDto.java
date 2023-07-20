@@ -1,4 +1,4 @@
-package ewm.server.dto;
+package ewm.server.dto.event;
 
 import lombok.AccessLevel;
 import lombok.Data;

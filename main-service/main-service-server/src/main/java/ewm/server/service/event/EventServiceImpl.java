@@ -1,8 +1,8 @@
 package ewm.server.service.event;
 
-import ewm.server.dto.EventFullDto;
-import ewm.server.dto.LocationDto;
-import ewm.server.dto.NewEventDto;
+import ewm.server.dto.event.EventFullDto;
+import ewm.server.dto.event.LocationDto;
+import ewm.server.dto.event.NewEventDto;
 import ewm.server.exception.CategoryNotFoundException;
 import ewm.server.exception.UserNotFoundException;
 import ewm.server.mapper.EventMapper;

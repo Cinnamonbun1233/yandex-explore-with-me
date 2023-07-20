@@ -1,6 +1,6 @@
 package ewm.server.mapper;
 
-import ewm.server.dto.LocationDto;
+import ewm.server.dto.event.LocationDto;
 import ewm.server.model.event.Location;
 
 public class LocationMapper {

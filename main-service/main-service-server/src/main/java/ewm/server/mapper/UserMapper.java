@@ -1,6 +1,6 @@
 package ewm.server.mapper;
 
-import ewm.server.dto.UserShortDto;
+import ewm.server.dto.user.UserShortDto;
 import ewm.server.model.user.User;
 
 public class UserMapper {

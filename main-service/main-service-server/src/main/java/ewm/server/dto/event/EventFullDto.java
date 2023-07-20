@@ -1,5 +1,7 @@
-package ewm.server.dto;
+package ewm.server.dto.event;
 
+import ewm.server.dto.category.CategoryDto;
+import ewm.server.dto.user.UserShortDto;
 import ewm.server.model.event.EventStatus;
 import lombok.AccessLevel;
 import lombok.Builder;

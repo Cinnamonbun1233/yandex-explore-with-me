@@ -1,7 +1,7 @@
 package ewm.server.controller.event;
 
-import ewm.server.dto.EventFullDto;
-import ewm.server.dto.NewEventDto;
+import ewm.server.dto.event.EventFullDto;
+import ewm.server.dto.event.NewEventDto;
 import ewm.server.service.event.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
