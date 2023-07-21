@@ -83,20 +83,6 @@ public class EventServiceImpl implements EventService {
                 .collect(Collectors.toList());
     }
 
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    private BooleanExpression makeSearchExpAdmin(Optional<Integer[]> users, Optional<String[]> states, Optional<Integer[]> categories, Optional<String> rangeStart, Optional<String> rangeEnd) {
-        QEvent qEvent = QEvent.event;
-        BooleanBuilder builder = new BooleanBuilder();
-        users.ifPresent(userIds -> builder.and(qEvent.initiator.id.in(userIds)));
-        states.ifPresent(stateStrings -> builder.and(qEvent.eventStatus.in(Arrays.stream(states.get())
-                .map(this::parseEventStatus)
-                .toArray(EventStatus[]::new))));
-        categories.ifPresent(categoryIds -> builder.and(qEvent.category.id.in(categoryIds)));
-        rangeStart.ifPresent(start -> builder.and(qEvent.eventDate.after(parseDateTime(start))));
-        rangeEnd.ifPresent(end -> builder.and(qEvent.eventDate.before(parseDateTime(end))));
-        return Expressions.asBoolean(builder.getValue());
-    }
-
     @Override
     public List<EventShortDto> getAllUsersEvents(Long userId, int from, int size) {
         Pageable request = makePageRequest(from, size);
@@ -152,6 +138,20 @@ public class EventServiceImpl implements EventService {
             return Comparator.comparing(EventShortDto::getViews);
         }
         return Comparator.comparing(EventShortDto::getEventDate);
+    }
+
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    private BooleanExpression makeSearchExpAdmin(Optional<Integer[]> users, Optional<String[]> states, Optional<Integer[]> categories, Optional<String> rangeStart, Optional<String> rangeEnd) {
+        QEvent qEvent = QEvent.event;
+        BooleanBuilder builder = new BooleanBuilder();
+        users.ifPresent(userIds -> builder.and(qEvent.initiator.id.in(userIds)));
+        states.ifPresent(stateStrings -> builder.and(qEvent.eventStatus.in(Arrays.stream(states.get())
+                .map(this::parseEventStatus)
+                .toArray(EventStatus[]::new))));
+        categories.ifPresent(categoryIds -> builder.and(qEvent.category.id.in(categoryIds)));
+        rangeStart.ifPresent(start -> builder.and(qEvent.eventDate.after(parseDateTime(start))));
+        rangeEnd.ifPresent(end -> builder.and(qEvent.eventDate.before(parseDateTime(end))));
+        return Expressions.asBoolean(builder.getValue());
     }
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
@@ -221,7 +221,7 @@ public class EventServiceImpl implements EventService {
                     toBeUpdated.setEventStatus(EventStatus.PUBLISHED);
                     break;
                 case REJECT_EVENT:
-                    toBeUpdated.setEventStatus(EventStatus.CANCELLED);
+                    toBeUpdated.setEventStatus(EventStatus.CANCELED);
                     break;
             }
         }
@@ -232,9 +232,11 @@ public class EventServiceImpl implements EventService {
             StateUserAction action = parseActionUser(updateRequest.getStateAction());
             switch (action) {
                 case CANCEL_REVIEW:
-                    toBeUpdated.setEventStatus(EventStatus.CANCELLED);
+                    toBeUpdated.setEventStatus(EventStatus.CANCELED);
+                    break;
                 case SEND_TO_REVIEW:
                     toBeUpdated.setEventStatus(EventStatus.PENDING);
+                    break;
             }
         }
     }
