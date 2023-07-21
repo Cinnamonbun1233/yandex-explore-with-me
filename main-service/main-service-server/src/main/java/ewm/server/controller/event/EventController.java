@@ -18,6 +18,7 @@ import java.util.Optional;
 public class EventController {
     private static final String EVENT_PRIVATE_PATH = "/users/{userId}/events";
     private static final String EVENT_ADMIN_PATH = "/admin/events";
+    private static final String EVENT_PUBLIC_PATH = "/events";
     private final EventService eventService;
 
     @Autowired
@@ -60,5 +61,19 @@ public class EventController {
                                                                         @RequestParam(name = "from", required = false, defaultValue = "0") int from,
                                                                         @RequestParam(name = "size", required = false, defaultValue = "10") int size) {
         return ResponseEntity.ok().body(eventService.getAllUsersEvents(userId, from, size));
+    }
+
+    @GetMapping(EVENT_PUBLIC_PATH)
+    public ResponseEntity<List<EventShortDto>> searchEventsPublic(@RequestParam(name = "text", required = false) Optional<String> text,
+                                                                  @RequestParam(name = "categories", required = false) Optional<Integer[]> categories,
+                                                                  @RequestParam(name = "paid", required = false) Optional<Boolean> paid,
+                                                                  @RequestParam(name = "rangeStart", required = false) Optional<String> rangeStart,
+                                                                  @RequestParam(name = "rangeEnd", required = false) Optional<String> rangeEnd,
+                                                                  @RequestParam(name = "onlyAvailable", required = false, defaultValue = "false") Boolean onlyAvailable,
+                                                                  @RequestParam(name = "sort", required = false, defaultValue = "EVENT_DATE") String sort,
+                                                                  @RequestParam(name = "from", required = false, defaultValue = "0") int from,
+                                                                  @RequestParam(name = "size", required = false, defaultValue = "10") int size) {
+        return ResponseEntity.ok().body(eventService.searchEventsPublic(text, categories, paid, rangeStart, rangeEnd,
+                onlyAvailable, sort, from, size));
     }
 }

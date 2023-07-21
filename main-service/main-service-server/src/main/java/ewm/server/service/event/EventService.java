@@ -20,4 +20,8 @@ public interface EventService {
                                          Optional<String> rangeEnd, int from, int size);
 
     List<EventShortDto> getAllUsersEvents(Long userId, int from, int size);
+
+    List<EventShortDto> searchEventsPublic(Optional<String> text, Optional<Integer[]> categories, Optional<Boolean> paid,
+                                           Optional<String> rangeStart, Optional<String> rangeEnd,
+                                           Boolean onlyAvailable, String sort, int from, int size);
 }

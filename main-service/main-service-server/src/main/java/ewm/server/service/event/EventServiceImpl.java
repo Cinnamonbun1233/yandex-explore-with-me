@@ -15,6 +15,7 @@ import ewm.server.model.event.Event;
 import ewm.server.model.event.EventStatus;
 import ewm.server.model.event.Location;
 import ewm.server.model.event.QEvent;
+import ewm.server.model.request.RequestStatus;
 import ewm.server.model.user.User;
 import ewm.server.repo.category.CategoryRepo;
 import ewm.server.repo.event.EventRepo;
@@ -74,6 +75,16 @@ public class EventServiceImpl implements EventService {
     public List<EventFullDto> searchEventsAdmin(Optional<Integer[]> users, Optional<String[]> states,
                                                 Optional<Integer[]> categories, Optional<String> rangeStart,
                                                 Optional<String> rangeEnd, int from, int size) {
+        Pageable request = makePageRequest(from, size);
+        BooleanExpression searchExp = makeSearchExpAdmin(users, states, categories, rangeStart, rangeEnd);
+        return eventRepo.findAll(searchExp, request).stream()
+                .sorted(Comparator.comparing(Event::getEventDate))
+                .map(EventMapper::mapModelToFullDto)
+                .collect(Collectors.toList());
+    }
+
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    private BooleanExpression makeSearchExpAdmin(Optional<Integer[]> users, Optional<String[]> states, Optional<Integer[]> categories, Optional<String> rangeStart, Optional<String> rangeEnd) {
         QEvent qEvent = QEvent.event;
         BooleanBuilder builder = new BooleanBuilder();
         users.ifPresent(userIds -> builder.and(qEvent.initiator.id.in(userIds)));
@@ -83,12 +94,7 @@ public class EventServiceImpl implements EventService {
         categories.ifPresent(categoryIds -> builder.and(qEvent.category.id.in(categoryIds)));
         rangeStart.ifPresent(start -> builder.and(qEvent.eventDate.after(parseDateTime(start))));
         rangeEnd.ifPresent(end -> builder.and(qEvent.eventDate.before(parseDateTime(end))));
-        BooleanExpression searchExp = Expressions.asBoolean(builder.getValue());
-        Pageable request = makePageRequest(from, size);
-        return eventRepo.findAll(searchExp, request).stream()
-                .sorted(Comparator.comparing(Event::getEventDate))
-                .map(EventMapper::mapModelToFullDto)
-                .collect(Collectors.toList());
+        return Expressions.asBoolean(builder.getValue());
     }
 
     @Override
@@ -99,6 +105,58 @@ public class EventServiceImpl implements EventService {
                 .sorted(Comparator.comparing(Event::getEventDate))
                 .map(EventMapper::mapModelToShortDto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<EventShortDto> searchEventsPublic(Optional<String> text, Optional<Integer[]> categories,
+                                                  Optional<Boolean> paid, Optional<String> rangeStart,
+                                                  Optional<String> rangeEnd, Boolean onlyAvailable,
+                                                  String sort, int from, int size) {
+        Pageable request = makePageRequest(from, size);
+        BooleanExpression searchExp = makeSearchExpPublic(text, categories, paid, rangeStart, rangeEnd);
+        Comparator<EventShortDto> comparator = makeComparator(sort);
+        if (onlyAvailable) {
+            return eventRepo.findAll(searchExp, request).stream()
+                    .filter(e -> e.getRequests().stream()
+                                         .filter(r -> r.getRequestStatus().equals(RequestStatus.CONFIRMED))
+                                         .count() < e.getParticipationLimit())
+                    .map(EventMapper::mapModelToShortDto)
+                    .sorted(comparator)
+                    .collect(Collectors.toList());
+        } else {
+            return eventRepo.findAll(searchExp, request).stream()
+                    .map(EventMapper::mapModelToShortDto)
+                    .sorted(comparator)
+                    .collect(Collectors.toList());
+        }
+    }
+
+    private Comparator<EventShortDto> makeComparator(String sort) {
+        SortType sorting = parseSortType(sort);
+        if (sorting.equals(SortType.VIEWS)) {
+            return Comparator.comparing(EventShortDto::getViews);
+        }
+        return Comparator.comparing(EventShortDto::getEventDate);
+    }
+
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    private BooleanExpression makeSearchExpPublic(Optional<String> text, Optional<Integer[]> categories, Optional<Boolean> paid, Optional<String> rangeStart, Optional<String> rangeEnd) {
+        QEvent qEvent = QEvent.event;
+        BooleanBuilder builder = new BooleanBuilder();
+        builder.and(qEvent.eventStatus.eq(EventStatus.PUBLISHED));
+        text.ifPresent(str -> {
+            BooleanExpression annotationContainsText = qEvent.annotation.likeIgnoreCase(str);
+            BooleanExpression descriptionContainsText = qEvent.description.likeIgnoreCase(str);
+            builder.and(annotationContainsText.or(descriptionContainsText));
+        });
+        categories.ifPresent(categoryIds -> builder.and(qEvent.category.id.in(categoryIds)));
+        rangeStart.ifPresent(start -> builder.and(qEvent.eventDate.after(parseDateTime(start))));
+        rangeEnd.ifPresent(end -> builder.and(qEvent.eventDate.before(parseDateTime(end))));
+        if (rangeStart.isEmpty() || rangeEnd.isEmpty()) {
+            builder.and(qEvent.eventDate.after(LocalDateTime.now()));
+        }
+        paid.ifPresent(bool -> builder.and(qEvent.paid.eq(bool)));
+        return Expressions.asBoolean(builder.getValue());
     }
 
     private Location saveLocation(LocationDto locationDto) {
@@ -240,6 +298,14 @@ public class EventServiceImpl implements EventService {
             return EventStatus.valueOf(eventStatus);
         } catch (IllegalArgumentException e) {
             throw new UnknownActionException("Unknown event status");
+        }
+    }
+
+    private SortType parseSortType(String sort) {
+        try {
+            return SortType.valueOf(sort);
+        } catch (IllegalArgumentException e) {
+            throw new UnknownActionException("Unknown sorting type");
         }
     }
 
