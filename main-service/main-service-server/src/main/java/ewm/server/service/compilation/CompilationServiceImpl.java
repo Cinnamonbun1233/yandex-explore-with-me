@@ -55,19 +55,19 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     private void updateTitle(Compilation toBeUpdated, UpdateCompilationRequest request) {
-        if(request.getTitle() != null) {
+        if (request.getTitle() != null) {
             toBeUpdated.setTitle(request.getTitle());
         }
     }
 
     private void updatePinned(Compilation toBeUpdated, UpdateCompilationRequest request) {
-        if(request.getPinned() != null) {
+        if (request.getPinned() != null) {
             toBeUpdated.setPinned(request.getPinned());
         }
     }
 
     private void updateEvents(Compilation toBeUpdated, UpdateCompilationRequest request) {
-        if(request.getEvents() != null) {
+        if (request.getEvents() != null) {
             //checkIfAllEventsExist(request.getEvents());
             List<Event> eventsToBeUpdated = eventRepo.findAllById(request.getEvents());
             toBeUpdated.setEvents(new HashSet<>(eventsToBeUpdated));
@@ -76,7 +76,7 @@ public class CompilationServiceImpl implements CompilationService {
 
     //TODO: to fix
     private void checkIfAllEventsExist(List<Long> events) {
-        if(eventRepo.findAllById(events).size() == 0) {
+        if (eventRepo.findAllById(events).size() == 0) {
             throw new EventNotFoundException("One of events does not exist");
         }
     }
@@ -86,7 +86,7 @@ public class CompilationServiceImpl implements CompilationService {
     public List<CompilationDto> getAllCompilations(Optional<Boolean> pinned, int from, int size) {
         Pageable request = makePageRequest(from, size);
         List<Compilation> compilations;
-        if(pinned.isEmpty()) {
+        if (pinned.isEmpty()) {
             compilations = compilationRepo.findAll(request).getContent();
         } else {
             compilations = compilationRepo.findAllByPinned(pinned.get());
@@ -97,4 +97,10 @@ public class CompilationServiceImpl implements CompilationService {
     private Pageable makePageRequest(int from, int size) {
         return PageRequest.of(from > 0 ? from / size : 0, size);
     }
+
+    @Override
+    public void deleteCompilation(Long compId) {
+        compilationRepo.deleteById(compId);
+    }
+
 }

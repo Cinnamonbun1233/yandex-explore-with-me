@@ -46,4 +46,10 @@ public class CompilationController {
                                                                    @RequestParam(name = "size", required = false, defaultValue = "10") int size) {
         return ResponseEntity.ok().body(compilationService.getAllCompilations(pinned, from, size));
     }
+
+    @DeleteMapping(COMPILATIONS_ADMIN_PATH + "/{compId}")
+    public ResponseEntity<Void> deleteCompilation(@PathVariable("compId") Long compId) {
+        compilationService.deleteCompilation(compId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
 }
