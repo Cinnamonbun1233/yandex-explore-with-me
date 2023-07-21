@@ -1,6 +1,6 @@
 package ewm.server.service.user;
 
-import ewm.server.exception.UserNotFoundException;
+import ewm.server.exception.user.UserNotFoundException;
 import ewm.server.model.user.User;
 import ewm.server.repo.user.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;

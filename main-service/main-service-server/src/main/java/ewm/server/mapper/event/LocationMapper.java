@@ -1,4 +1,4 @@
-package ewm.server.mapper;
+package ewm.server.mapper.event;
 
 import ewm.server.dto.event.LocationDto;
 import ewm.server.model.event.Location;

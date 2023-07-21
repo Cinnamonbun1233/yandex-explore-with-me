@@ -1,4 +1,4 @@
-package ewm.server.mapper;
+package ewm.server.mapper.user;
 
 import ewm.server.dto.user.UserShortDto;
 import ewm.server.model.user.User;

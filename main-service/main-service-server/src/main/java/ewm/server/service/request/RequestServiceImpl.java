@@ -1,9 +1,9 @@
 package ewm.server.service.request;
 
 import ewm.server.dto.request.ParticipationRequestDto;
-import ewm.server.exception.EventNotFoundException;
-import ewm.server.exception.UserNotFoundException;
-import ewm.server.mapper.RequestMapper;
+import ewm.server.exception.event.EventNotFoundException;
+import ewm.server.exception.user.UserNotFoundException;
+import ewm.server.mapper.request.RequestMapper;
 import ewm.server.model.event.ParticipationRequest;
 import ewm.server.model.event.RequestStatus;
 import ewm.server.repo.event.EventRepo;

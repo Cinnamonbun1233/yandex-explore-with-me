@@ -1,7 +1,9 @@
-package ewm.server.mapper;
+package ewm.server.mapper.event;
 
 import ewm.server.dto.event.EventFullDto;
 import ewm.server.dto.event.NewEventDto;
+import ewm.server.mapper.user.UserMapper;
+import ewm.server.mapper.category.CategoryMapper;
 import ewm.server.model.event.Event;
 import ewm.server.model.event.ParticipationRequest;
 import ewm.server.model.event.RequestStatus;

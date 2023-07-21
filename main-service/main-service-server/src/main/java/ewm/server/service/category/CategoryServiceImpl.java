@@ -1,6 +1,6 @@
 package ewm.server.service.category;
 
-import ewm.server.exception.CategoryNotFoundException;
+import ewm.server.exception.category.CategoryNotFoundException;
 import ewm.server.model.category.Category;
 import ewm.server.repo.category.CategoryRepo;
 import org.springframework.beans.factory.annotation.Autowired;

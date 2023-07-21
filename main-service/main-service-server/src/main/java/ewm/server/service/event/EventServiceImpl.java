@@ -1,12 +1,12 @@
 package ewm.server.service.event;
 
 import ewm.server.dto.event.*;
-import ewm.server.exception.CategoryNotFoundException;
-import ewm.server.exception.EventNotFoundException;
-import ewm.server.exception.UnknownActionException;
-import ewm.server.exception.UserNotFoundException;
-import ewm.server.mapper.EventMapper;
-import ewm.server.mapper.LocationMapper;
+import ewm.server.exception.category.CategoryNotFoundException;
+import ewm.server.exception.event.EventNotFoundException;
+import ewm.server.exception.event.UnknownActionException;
+import ewm.server.exception.user.UserNotFoundException;
+import ewm.server.mapper.event.EventMapper;
+import ewm.server.mapper.event.LocationMapper;
 import ewm.server.model.category.Category;
 import ewm.server.model.event.Event;
 import ewm.server.model.event.EventStatus;

@@ -1,4 +1,4 @@
-package ewm.server.mapper;
+package ewm.server.mapper.request;
 
 import ewm.server.dto.request.ParticipationRequestDto;
 import ewm.server.model.event.ParticipationRequest;

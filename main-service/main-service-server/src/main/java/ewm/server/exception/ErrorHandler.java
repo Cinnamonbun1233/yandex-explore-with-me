@@ -1,5 +1,7 @@
 package ewm.server.exception;
 
+import ewm.server.exception.category.CategoryNotFoundException;
+import ewm.server.exception.user.UserNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
