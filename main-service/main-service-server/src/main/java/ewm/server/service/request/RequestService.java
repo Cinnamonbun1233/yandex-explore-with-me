@@ -4,4 +4,5 @@ import ewm.server.dto.request.ParticipationRequestDto;
 
 public interface RequestService {
     ParticipationRequestDto addRequest(Long userId, Long eventId);
+    ParticipationRequestDto cancelOwnRequest(Long userId, Long requestId);
 }

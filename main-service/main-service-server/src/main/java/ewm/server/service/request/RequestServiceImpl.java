@@ -2,6 +2,7 @@ package ewm.server.service.request;
 
 import ewm.server.dto.request.ParticipationRequestDto;
 import ewm.server.exception.event.EventNotFoundException;
+import ewm.server.exception.request.RequestNotFoundException;
 import ewm.server.exception.user.UserNotFoundException;
 import ewm.server.mapper.request.RequestMapper;
 import ewm.server.model.request.ParticipationRequest;
@@ -33,5 +34,21 @@ public class RequestServiceImpl implements RequestService {
         newRequest.setRequestStatus(RequestStatus.PENDING);
         newRequest.setCreated(LocalDateTime.now());
         return RequestMapper.mapModelToDto(requestRepo.save(newRequest));
+    }
+
+    @Override
+    public ParticipationRequestDto cancelOwnRequest(Long userId, Long requestId) {
+        checkIfUserExists(userId);
+        ParticipationRequest toBeCanceled = requestRepo.findById(requestId).orElseThrow(() -> {
+            throw new RequestNotFoundException("Request does not exist");
+        });
+        toBeCanceled.setRequestStatus(RequestStatus.CANCELED);
+        return RequestMapper.mapModelToDto(requestRepo.save(toBeCanceled));
+    }
+
+    private void checkIfUserExists(Long userId) {
+        userRepo.findById(userId).orElseThrow(() -> {
+            throw new UserNotFoundException("User does not exist");
+        });
     }
 }

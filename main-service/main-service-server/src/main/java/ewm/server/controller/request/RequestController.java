@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/users/{userId}/requests")
 public class RequestController {
+    private static final String CANCEL_OWN_REQUEST_PATH = "/{requestId}/cancel";
     private final RequestService requestService;
 
     @Autowired
@@ -21,5 +22,11 @@ public class RequestController {
     public ResponseEntity<ParticipationRequestDto> addRequest(@PathVariable("userId") Long userId,
                                                               @RequestParam("eventId") Long eventId) {
         return ResponseEntity.status(HttpStatus.CREATED).body(requestService.addRequest(userId, eventId));
+    }
+
+    @PatchMapping(value = CANCEL_OWN_REQUEST_PATH)
+    public ResponseEntity<ParticipationRequestDto> cancelOwnRequest(@PathVariable("userId") Long userId,
+                                                                    @PathVariable("requestId") Long requestId) {
+        return ResponseEntity.ok().body(requestService.cancelOwnRequest(userId, requestId));
     }
 }
