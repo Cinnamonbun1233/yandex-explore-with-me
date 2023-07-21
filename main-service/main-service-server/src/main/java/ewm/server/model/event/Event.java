@@ -1,6 +1,7 @@
 package ewm.server.model.event;
 
 import ewm.server.model.category.Category;
+import ewm.server.model.request.ParticipationRequest;
 import ewm.server.model.user.User;
 import lombok.AccessLevel;
 import lombok.Getter;

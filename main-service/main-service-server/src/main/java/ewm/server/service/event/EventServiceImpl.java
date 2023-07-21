@@ -50,7 +50,7 @@ public class EventServiceImpl implements EventService {
         newEvent.setInitiator(getInitiator(userId));
         newEvent.setCreatedOn(LocalDateTime.now());
         newEvent.setEventStatus(EventStatus.PENDING);
-        return EventMapper.mapModelToDto(eventRepo.save(newEvent));
+        return EventMapper.mapModelToFullDto(eventRepo.save(newEvent));
     }
 
     @Override
@@ -58,7 +58,7 @@ public class EventServiceImpl implements EventService {
         Event toBeUpdated = getEvent(eventId);
         updateEvent(toBeUpdated, updateRequest);
         updateStatusAdmin(toBeUpdated, updateRequest);
-        return EventMapper.mapModelToDto(eventRepo.save(toBeUpdated));
+        return EventMapper.mapModelToFullDto(eventRepo.save(toBeUpdated));
     }
 
     @Override
@@ -67,7 +67,7 @@ public class EventServiceImpl implements EventService {
         Event toBeUpdated = getEvent(eventId);
         updateEvent(toBeUpdated, updateRequest);
         updateStatusUser(toBeUpdated, updateRequest);
-        return EventMapper.mapModelToDto(eventRepo.save(toBeUpdated));
+        return EventMapper.mapModelToFullDto(eventRepo.save(toBeUpdated));
     }
 
     @Override
@@ -84,10 +84,20 @@ public class EventServiceImpl implements EventService {
         rangeStart.ifPresent(start -> builder.and(qEvent.eventDate.after(parseDateTime(start))));
         rangeEnd.ifPresent(end -> builder.and(qEvent.eventDate.before(parseDateTime(end))));
         BooleanExpression searchExp = Expressions.asBoolean(builder.getValue());
-        Pageable request = PageRequest.of(from > 0 ? from / size : 0, size);
+        Pageable request = makePageRequest(from, size);
         return eventRepo.findAll(searchExp, request).stream()
                 .sorted(Comparator.comparing(Event::getEventDate))
-                .map(EventMapper::mapModelToDto)
+                .map(EventMapper::mapModelToFullDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<EventShortDto> getAllUsersEvents(Long userId, int from, int size) {
+        Pageable request = makePageRequest(from, size);
+        BooleanExpression byUserId = QEvent.event.initiator.id.eq(userId);
+        return eventRepo.findAll(byUserId, request).stream()
+                .sorted(Comparator.comparing(Event::getEventDate))
+                .map(EventMapper::mapModelToShortDto)
                 .collect(Collectors.toList());
     }
 
@@ -231,6 +241,10 @@ public class EventServiceImpl implements EventService {
         } catch (IllegalArgumentException e) {
             throw new UnknownActionException("Unknown event status");
         }
+    }
+
+    private Pageable makePageRequest(int from, int size) {
+        return PageRequest.of(from > 0 ? from / size : 0, size);
     }
 
     private LocalDateTime parseDateTime(String dateTimeString) {

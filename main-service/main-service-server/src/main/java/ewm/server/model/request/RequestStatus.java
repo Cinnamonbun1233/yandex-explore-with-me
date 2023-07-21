@@ -1,4 +1,4 @@
-package ewm.server.model.event;
+package ewm.server.model.request;
 
 public enum RequestStatus {
     CONFIRMED, REJECTED, PENDING

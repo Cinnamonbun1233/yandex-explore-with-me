@@ -1,7 +1,7 @@
 package ewm.server.mapper.request;
 
 import ewm.server.dto.request.ParticipationRequestDto;
-import ewm.server.model.event.ParticipationRequest;
+import ewm.server.model.request.ParticipationRequest;
 
 public class RequestMapper {
     public static ParticipationRequestDto mapModelToDto(ParticipationRequest request) {

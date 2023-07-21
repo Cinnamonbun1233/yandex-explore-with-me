@@ -1,6 +1,7 @@
 package ewm.server.service.event;
 
 import ewm.server.dto.event.EventFullDto;
+import ewm.server.dto.event.EventShortDto;
 import ewm.server.dto.event.NewEventDto;
 import ewm.server.dto.event.UpdateEventRequest;
 
@@ -17,4 +18,6 @@ public interface EventService {
     List<EventFullDto> searchEventsAdmin(Optional<Integer[]> users, Optional<String[]> states,
                                          Optional<Integer[]> categories, Optional<String> rangeStart,
                                          Optional<String> rangeEnd, int from, int size);
+
+    List<EventShortDto> getAllUsersEvents(Long userId, int from, int size);
 }

@@ -1,6 +1,7 @@
 package ewm.server.controller.event;
 
 import ewm.server.dto.event.EventFullDto;
+import ewm.server.dto.event.EventShortDto;
 import ewm.server.dto.event.NewEventDto;
 import ewm.server.dto.event.UpdateEventRequest;
 import ewm.server.service.event.EventService;
@@ -52,5 +53,12 @@ public class EventController {
                                                                 @RequestParam(name = "size", required = false, defaultValue = "10") int size) {
         return ResponseEntity.ok().body(eventService.searchEventsAdmin(users, states, categories, rangeStart, rangeEnd,
                 from, size));
+    }
+
+    @GetMapping(EVENT_PRIVATE_PATH)
+    public ResponseEntity<List<EventShortDto>> getAllUsersEventsPrivate(@PathVariable("userId") Long userId,
+                                                                        @RequestParam(name = "from", required = false, defaultValue = "0") int from,
+                                                                        @RequestParam(name = "size", required = false, defaultValue = "10") int size) {
+        return ResponseEntity.ok().body(eventService.getAllUsersEvents(userId, from, size));
     }
 }
