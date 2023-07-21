@@ -81,4 +81,10 @@ public class EventController {
     public ResponseEntity<EventFullDto> getEventByIdPublic(@PathVariable("id") Long id) {
         return ResponseEntity.ok().body(eventService.getEventByIdPublic(id));
     }
+
+    @GetMapping(EVENT_PRIVATE_PATH + "/{eventId}")
+    public ResponseEntity<EventFullDto> getEventByIdPrivate(@PathVariable("userId") Long userId,
+                                                            @PathVariable("eventId") Long eventId) {
+        return ResponseEntity.ok().body(eventService.getEventByIdPrivate(userId, eventId));
+    }
 }

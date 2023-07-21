@@ -133,7 +133,15 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventFullDto getEventByIdPublic(Long id) {
-        Event eventFound = eventRepo.findById(id)
+        Event eventFound = eventRepo.findByIdAndEventStatus(id, EventStatus.PUBLISHED)
+                .orElseThrow(() -> {throw new EventNotFoundException("Event not found");});
+        return EventMapper.mapModelToFullDto(eventFound);
+    }
+
+    @Override
+    public EventFullDto getEventByIdPrivate(Long userId, Long eventId) {
+        checkIfUserExists(userId);
+        Event eventFound = eventRepo.findById(eventId)
                 .orElseThrow(() -> {throw new EventNotFoundException("Event not found");});
         return EventMapper.mapModelToFullDto(eventFound);
     }

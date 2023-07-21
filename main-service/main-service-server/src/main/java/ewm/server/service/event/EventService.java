@@ -26,4 +26,6 @@ public interface EventService {
                                            Boolean onlyAvailable, String sort, int from, int size);
 
     EventFullDto getEventByIdPublic(Long id);
+
+    EventFullDto getEventByIdPrivate(Long userId, Long eventId);
 }
