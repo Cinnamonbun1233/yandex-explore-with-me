@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/users/{userId}/requests")
 public class RequestController {
@@ -28,5 +30,10 @@ public class RequestController {
     public ResponseEntity<ParticipationRequestDto> cancelOwnRequest(@PathVariable("userId") Long userId,
                                                                     @PathVariable("requestId") Long requestId) {
         return ResponseEntity.ok().body(requestService.cancelOwnRequest(userId, requestId));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<ParticipationRequestDto>> getUsersRequests(@PathVariable("userId") Long userId) {
+        return ResponseEntity.ok().body(requestService.getUsersRequests(userId));
     }
 }
