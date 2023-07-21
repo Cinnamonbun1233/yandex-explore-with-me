@@ -10,16 +10,16 @@ import ewm.server.exception.event.UnknownActionException;
 import ewm.server.exception.user.UserNotFoundException;
 import ewm.server.mapper.event.EventMapper;
 import ewm.server.mapper.event.LocationMapper;
+import ewm.server.mapper.request.RequestMapper;
 import ewm.server.model.category.Category;
-import ewm.server.model.event.Event;
-import ewm.server.model.event.EventStatus;
-import ewm.server.model.event.Location;
-import ewm.server.model.event.QEvent;
+import ewm.server.model.event.*;
+import ewm.server.model.request.ParticipationRequest;
 import ewm.server.model.request.RequestStatus;
 import ewm.server.model.user.User;
 import ewm.server.repo.category.CategoryRepo;
 import ewm.server.repo.event.EventRepo;
 import ewm.server.repo.event.LocationRepo;
+import ewm.server.repo.request.RequestRepo;
 import ewm.server.repo.user.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -33,6 +33,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +43,7 @@ public class EventServiceImpl implements EventService {
     private final CategoryRepo categoryRepo;
     private final EventRepo eventRepo;
     private final LocationRepo locationRepo;
+    private final RequestRepo requestRepo;
 
     @Override
     public EventFullDto addEvent(Long userId, NewEventDto newEventDto) {
@@ -332,5 +334,42 @@ public class EventServiceImpl implements EventService {
 
     private LocalDateTime parseDateTime(String dateTimeString) {
         return LocalDateTime.parse(dateTimeString, REQUEST_TIME_FORMAT);
+    }
+
+    @Override
+    public EventRequestStatusUpdateResult updateRequestByInitiator(Long userId, Long eventId,
+                                                                   EventRequestStatusUpdateRequest request) {
+        checkIfUserExists(userId);
+        RequestStatus status = parseRequestStatus(request.getStatus());
+        List<ParticipationRequest> toBeUpdated = makeListOfRequestsToBeUpdated(eventId, request);
+        toBeUpdated.forEach(r -> r.setRequestStatus(status));
+        requestRepo.saveAllAndFlush(toBeUpdated);
+        return EventRequestStatusUpdateResult.builder()
+                .confirmedRequests(requestRepo.findAllByRequestStatusAndEvent_Id(RequestStatus.CONFIRMED, eventId)
+                        .stream()
+                        .map(RequestMapper::mapModelToDto)
+                        .collect(Collectors.toList()))
+                .rejectedRequests(requestRepo.findAllByRequestStatusAndEvent_Id(RequestStatus.REJECTED, eventId)
+                        .stream()
+                        .map(RequestMapper::mapModelToDto)
+                        .collect(Collectors.toList()))
+                .build();
+    }
+
+    private List<ParticipationRequest> makeListOfRequestsToBeUpdated(Long eventId,
+                                                                     EventRequestStatusUpdateRequest request) {
+        QParticipationRequest qRequest = QParticipationRequest.participationRequest;
+        BooleanExpression exp = qRequest.event.id.eq(eventId)
+                .and(qRequest.id.in(request.getRequestIds()));
+        return StreamSupport.stream(requestRepo.findAll(exp).spliterator(), false)
+                .collect(Collectors.toList());
+    }
+
+    private RequestStatus parseRequestStatus(String status) {
+        try {
+            return RequestStatus.valueOf(status);
+        } catch (IllegalArgumentException e) {
+            throw new UnknownActionException("Status is unknown");
+        }
     }
 }

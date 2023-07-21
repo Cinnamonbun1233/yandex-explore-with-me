@@ -1,9 +1,6 @@
 package ewm.server.controller.event;
 
-import ewm.server.dto.event.EventFullDto;
-import ewm.server.dto.event.EventShortDto;
-import ewm.server.dto.event.NewEventDto;
-import ewm.server.dto.event.UpdateEventRequest;
+import ewm.server.dto.event.*;
 import ewm.server.service.event.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -86,5 +83,12 @@ public class EventController {
     public ResponseEntity<EventFullDto> getEventByIdPrivate(@PathVariable("userId") Long userId,
                                                             @PathVariable("eventId") Long eventId) {
         return ResponseEntity.ok().body(eventService.getEventByIdPrivate(userId, eventId));
+    }
+
+    @PatchMapping(value = EVENT_PRIVATE_PATH + "/{eventId}/requests")
+    public ResponseEntity<EventRequestStatusUpdateResult> updateRequestByInitiator(@PathVariable("userId") Long userId,
+                                                                                   @PathVariable("eventId") Long eventId,
+                                                                                   @Valid @RequestBody EventRequestStatusUpdateRequest request) {
+        return ResponseEntity.ok().body(eventService.updateRequestByInitiator(userId, eventId, request));
     }
 }

@@ -1,9 +1,6 @@
 package ewm.server.service.event;
 
-import ewm.server.dto.event.EventFullDto;
-import ewm.server.dto.event.EventShortDto;
-import ewm.server.dto.event.NewEventDto;
-import ewm.server.dto.event.UpdateEventRequest;
+import ewm.server.dto.event.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,4 +25,7 @@ public interface EventService {
     EventFullDto getEventByIdPublic(Long id);
 
     EventFullDto getEventByIdPrivate(Long userId, Long eventId);
+
+    EventRequestStatusUpdateResult updateRequestByInitiator(Long userId, Long eventId,
+                                                            EventRequestStatusUpdateRequest request);
 }
