@@ -7,14 +7,19 @@ import ewm.server.dto.event.*;
 import ewm.server.dto.request.ParticipationRequestDto;
 import ewm.server.exception.category.CategoryNotFoundException;
 import ewm.server.exception.event.EventNotFoundException;
+import ewm.server.exception.event.IllegalDatesException;
 import ewm.server.exception.event.UnknownActionException;
 import ewm.server.exception.user.UserNotFoundException;
 import ewm.server.mapper.event.EventMapper;
 import ewm.server.mapper.event.LocationMapper;
 import ewm.server.mapper.request.RequestMapper;
 import ewm.server.model.category.Category;
-import ewm.server.model.event.*;
+import ewm.server.model.event.Event;
+import ewm.server.model.event.EventStatus;
+import ewm.server.model.event.Location;
+import ewm.server.model.event.QEvent;
 import ewm.server.model.request.ParticipationRequest;
+import ewm.server.model.request.QParticipationRequest;
 import ewm.server.model.request.RequestStatus;
 import ewm.server.model.user.User;
 import ewm.server.repo.category.CategoryRepo;
@@ -135,6 +140,52 @@ public class EventServiceImpl implements EventService {
         return EventMapper.mapModelToFullDto(eventFound);
     }
 
+    @Override
+    public EventRequestStatusUpdateResult updateRequestByInitiator(Long userId, Long eventId,
+                                                                   EventRequestStatusUpdateRequest request) {
+        checkIfUserExists(userId);
+        RequestStatus status = parseRequestStatus(request.getStatus());
+        List<ParticipationRequest> toBeUpdated = makeListOfRequestsToBeUpdated(eventId, request);
+        toBeUpdated.forEach(r -> r.setRequestStatus(status));
+        requestRepo.saveAllAndFlush(toBeUpdated);
+        return EventRequestStatusUpdateResult.builder()
+                .confirmedRequests(requestRepo.findAllByRequestStatusAndEvent_Id(RequestStatus.CONFIRMED, eventId)
+                        .stream()
+                        .map(RequestMapper::mapModelToDto)
+                        .collect(Collectors.toList()))
+                .rejectedRequests(requestRepo.findAllByRequestStatusAndEvent_Id(RequestStatus.REJECTED, eventId)
+                        .stream()
+                        .map(RequestMapper::mapModelToDto)
+                        .collect(Collectors.toList()))
+                .build();
+    }
+
+    @Override
+    public List<ParticipationRequestDto> getRequestsToUsersEvent(Long userId, Long eventId) {
+        checkIfUserExists(userId);
+        Event eventFound = eventRepo.findById(eventId).orElseThrow(() -> {
+            throw new EventNotFoundException("Event does not exist");
+        });
+        return eventFound.getRequests().stream().map(RequestMapper::mapModelToDto).collect(Collectors.toList());
+    }
+
+    private List<ParticipationRequest> makeListOfRequestsToBeUpdated(Long eventId,
+                                                                     EventRequestStatusUpdateRequest request) {
+        QParticipationRequest qRequest = QParticipationRequest.participationRequest;
+        BooleanExpression exp = qRequest.event.id.eq(eventId)
+                .and(qRequest.id.in(request.getRequestIds()));
+        return StreamSupport.stream(requestRepo.findAll(exp).spliterator(), false)
+                .collect(Collectors.toList());
+    }
+
+    private RequestStatus parseRequestStatus(String status) {
+        try {
+            return RequestStatus.valueOf(status);
+        } catch (IllegalArgumentException e) {
+            throw new UnknownActionException("Status is unknown");
+        }
+    }
+
     private Comparator<EventShortDto> makeComparator(String sort) {
         SortType sorting = parseSortType(sort);
         if (sorting.equals(SortType.VIEWS)) {
@@ -168,6 +219,9 @@ public class EventServiceImpl implements EventService {
             builder.and(annotationContainsText.or(descriptionContainsText));
         });
         categories.ifPresent(categoryIds -> builder.and(qEvent.category.id.in(categoryIds)));
+        if(rangeStart.isPresent() && rangeEnd.isPresent()) {
+            validateDates(rangeStart.get(), rangeEnd.get());
+        }
         rangeStart.ifPresent(start -> builder.and(qEvent.eventDate.after(parseDateTime(start))));
         rangeEnd.ifPresent(end -> builder.and(qEvent.eventDate.before(parseDateTime(end))));
         if (rangeStart.isEmpty() || rangeEnd.isEmpty()) {
@@ -175,6 +229,12 @@ public class EventServiceImpl implements EventService {
         }
         paid.ifPresent(bool -> builder.and(qEvent.paid.eq(bool)));
         return Expressions.asBoolean(builder.getValue());
+    }
+
+    private void validateDates(String rangeStart, String rangeEnd) {
+        if(parseDateTime(rangeStart).isAfter(parseDateTime(rangeEnd))) {
+            throw new IllegalDatesException("Range start has to be after range end");
+        }
     }
 
     private Location saveLocation(LocationDto locationDto) {
@@ -335,51 +395,5 @@ public class EventServiceImpl implements EventService {
 
     private LocalDateTime parseDateTime(String dateTimeString) {
         return LocalDateTime.parse(dateTimeString, REQUEST_TIME_FORMAT);
-    }
-
-    @Override
-    public EventRequestStatusUpdateResult updateRequestByInitiator(Long userId, Long eventId,
-                                                                   EventRequestStatusUpdateRequest request) {
-        checkIfUserExists(userId);
-        RequestStatus status = parseRequestStatus(request.getStatus());
-        List<ParticipationRequest> toBeUpdated = makeListOfRequestsToBeUpdated(eventId, request);
-        toBeUpdated.forEach(r -> r.setRequestStatus(status));
-        requestRepo.saveAllAndFlush(toBeUpdated);
-        return EventRequestStatusUpdateResult.builder()
-                .confirmedRequests(requestRepo.findAllByRequestStatusAndEvent_Id(RequestStatus.CONFIRMED, eventId)
-                        .stream()
-                        .map(RequestMapper::mapModelToDto)
-                        .collect(Collectors.toList()))
-                .rejectedRequests(requestRepo.findAllByRequestStatusAndEvent_Id(RequestStatus.REJECTED, eventId)
-                        .stream()
-                        .map(RequestMapper::mapModelToDto)
-                        .collect(Collectors.toList()))
-                .build();
-    }
-
-    private List<ParticipationRequest> makeListOfRequestsToBeUpdated(Long eventId,
-                                                                     EventRequestStatusUpdateRequest request) {
-        QParticipationRequest qRequest = QParticipationRequest.participationRequest;
-        BooleanExpression exp = qRequest.event.id.eq(eventId)
-                .and(qRequest.id.in(request.getRequestIds()));
-        return StreamSupport.stream(requestRepo.findAll(exp).spliterator(), false)
-                .collect(Collectors.toList());
-    }
-
-    private RequestStatus parseRequestStatus(String status) {
-        try {
-            return RequestStatus.valueOf(status);
-        } catch (IllegalArgumentException e) {
-            throw new UnknownActionException("Status is unknown");
-        }
-    }
-
-    @Override
-    public List<ParticipationRequestDto> getRequestsToUsersEvent(Long userId, Long eventId) {
-        checkIfUserExists(userId);
-        Event eventFound = eventRepo.findById(eventId).orElseThrow(() -> {
-            throw new EventNotFoundException("Event does not exist");
-        });
-        return eventFound.getRequests().stream().map(RequestMapper::mapModelToDto).collect(Collectors.toList());
     }
 }

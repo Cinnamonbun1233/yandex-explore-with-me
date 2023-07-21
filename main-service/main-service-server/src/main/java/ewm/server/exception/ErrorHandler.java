@@ -1,6 +1,8 @@
 package ewm.server.exception;
 
 import ewm.server.exception.category.CategoryNotFoundException;
+import ewm.server.exception.compilation.CompilationNotFoundException;
+import ewm.server.exception.event.EventNotFoundException;
 import ewm.server.exception.user.UserNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -12,7 +14,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 @Slf4j
 public class ErrorHandler {
-    @ExceptionHandler({UserNotFoundException.class, CategoryNotFoundException.class})
+    @ExceptionHandler({
+            UserNotFoundException.class,
+            CategoryNotFoundException.class,
+            EventNotFoundException.class,
+            CompilationNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFoundExceptions(final RuntimeException e) {
         log.error(e.getMessage());
