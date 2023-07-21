@@ -1,5 +1,8 @@
 package ewm.server.service.event;
 
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import ewm.server.dto.event.*;
 import ewm.server.exception.category.CategoryNotFoundException;
 import ewm.server.exception.event.EventNotFoundException;
@@ -11,16 +14,24 @@ import ewm.server.model.category.Category;
 import ewm.server.model.event.Event;
 import ewm.server.model.event.EventStatus;
 import ewm.server.model.event.Location;
+import ewm.server.model.event.QEvent;
 import ewm.server.model.user.User;
 import ewm.server.repo.category.CategoryRepo;
 import ewm.server.repo.event.EventRepo;
 import ewm.server.repo.event.LocationRepo;
 import ewm.server.repo.user.UserRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -57,6 +68,27 @@ public class EventServiceImpl implements EventService {
         updateEvent(toBeUpdated, updateRequest);
         updateStatusUser(toBeUpdated, updateRequest);
         return EventMapper.mapModelToDto(eventRepo.save(toBeUpdated));
+    }
+
+    @Override
+    public List<EventFullDto> searchEventsAdmin(Optional<Integer[]> users, Optional<String[]> states,
+                                                Optional<Integer[]> categories, Optional<String> rangeStart,
+                                                Optional<String> rangeEnd, int from, int size) {
+        QEvent qEvent = QEvent.event;
+        BooleanBuilder builder = new BooleanBuilder();
+        users.ifPresent(userIds -> builder.and(qEvent.initiator.id.in(userIds)));
+        states.ifPresent(stateStrings -> builder.and(qEvent.eventStatus.in(Arrays.stream(states.get())
+                .map(this::parseEventStatus)
+                .toArray(EventStatus[]::new))));
+        categories.ifPresent(categoryIds -> builder.and(qEvent.category.id.in(categoryIds)));
+        rangeStart.ifPresent(start -> builder.and(qEvent.eventDate.after(parseDateTime(start))));
+        rangeEnd.ifPresent(end -> builder.and(qEvent.eventDate.before(parseDateTime(end))));
+        BooleanExpression searchExp = Expressions.asBoolean(builder.getValue());
+        Pageable request = PageRequest.of(from > 0 ? from / size : 0, size);
+        return eventRepo.findAll(searchExp, request).stream()
+                .sorted(Comparator.comparing(Event::getEventDate))
+                .map(EventMapper::mapModelToDto)
+                .collect(Collectors.toList());
     }
 
     private Location saveLocation(LocationDto locationDto) {
@@ -191,5 +223,17 @@ public class EventServiceImpl implements EventService {
         if (updateRequest.getDescription() != null) {
             toBeUpdated.setDescription(updateRequest.getDescription());
         }
+    }
+
+    private EventStatus parseEventStatus(String eventStatus) {
+        try {
+            return EventStatus.valueOf(eventStatus);
+        } catch (IllegalArgumentException e) {
+            throw new UnknownActionException("Unknown event status");
+        }
+    }
+
+    private LocalDateTime parseDateTime(String dateTimeString) {
+        return LocalDateTime.parse(dateTimeString, REQUEST_TIME_FORMAT);
     }
 }

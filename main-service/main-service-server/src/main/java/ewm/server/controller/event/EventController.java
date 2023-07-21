@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class EventController {
@@ -38,5 +40,17 @@ public class EventController {
                                                         @PathVariable("eventId") Long eventId,
                                                         @Valid @RequestBody UpdateEventRequest updateRequest) {
         return ResponseEntity.ok().body(eventService.updateEventUser(userId, eventId, updateRequest));
+    }
+
+    @GetMapping(EVENT_ADMIN_PATH)
+    public ResponseEntity<List<EventFullDto>> searchEventsAdmin(@RequestParam(name = "users", required = false) Optional<Integer[]> users,
+                                                                @RequestParam(name = "states", required = false) Optional<String[]> states,
+                                                                @RequestParam(name = "categories", required = false) Optional<Integer[]> categories,
+                                                                @RequestParam(name = "rangeStart", required = false) Optional<String> rangeStart,
+                                                                @RequestParam(name = "rangeEnd", required = false) Optional<String> rangeEnd,
+                                                                @RequestParam(name = "from", required = false, defaultValue = "0") int from,
+                                                                @RequestParam(name = "size", required = false, defaultValue = "10") int size) {
+        return ResponseEntity.ok().body(eventService.searchEventsAdmin(users, states, categories, rangeStart, rangeEnd,
+                from, size));
     }
 }
