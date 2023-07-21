@@ -1,17 +1,18 @@
 package ewm.server.service.category;
 
-import ewm.server.model.category.Category;
+import ewm.server.dto.category.CategoryDto;
+import ewm.server.dto.category.NewCategoryDto;
 
 import java.util.List;
 
 public interface CategoryService {
-    Category addCategory(Category category);
+    CategoryDto addCategory(NewCategoryDto category);
 
-    Category updateCategory(Long catId, Category category);
+    CategoryDto updateCategory(Long catId, CategoryDto category);
 
     void deleteCategory(Long catId);
 
-    List<Category> getAllCategories(int from, int size);
+    List<CategoryDto> getAllCategories(int from, int size);
 
-    Category getCategoryById(Long catId);
+    CategoryDto getCategoryById(Long catId);
 }

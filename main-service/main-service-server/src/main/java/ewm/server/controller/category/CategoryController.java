@@ -1,6 +1,7 @@
 package ewm.server.controller.category;
 
-import ewm.server.model.category.Category;
+import ewm.server.dto.category.CategoryDto;
+import ewm.server.dto.category.NewCategoryDto;
 import ewm.server.service.category.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,12 +23,12 @@ public class CategoryController {
     }
 
     @PostMapping(value = CAT_ADMIN_PATH)
-    public ResponseEntity<Category> addCategory(@Valid @RequestBody Category category) {
+    public ResponseEntity<CategoryDto> addCategory(@Valid @RequestBody NewCategoryDto category) {
         return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.addCategory(category));
     }
 
     @PatchMapping(value = CAT_ADMIN_PATH + "/{catId}")
-    public ResponseEntity<Category> updateCategory(@PathVariable("catId") Long catId, @Valid @RequestBody Category category) {
+    public ResponseEntity<CategoryDto> updateCategory(@PathVariable("catId") Long catId, @Valid @RequestBody CategoryDto category) {
         return ResponseEntity.ok().body(categoryService.updateCategory(catId, category));
     }
 
@@ -38,13 +39,13 @@ public class CategoryController {
     }
 
     @GetMapping(CAT_PUBLIC_PATH)
-    public ResponseEntity<List<Category>> getAllCategories(@RequestParam(required = false, defaultValue = "0") int from,
-                                                           @RequestParam(required = false, defaultValue = "10") int size) {
+    public ResponseEntity<List<CategoryDto>> getAllCategories(@RequestParam(required = false, defaultValue = "0") int from,
+                                                              @RequestParam(required = false, defaultValue = "10") int size) {
         return ResponseEntity.ok().body(categoryService.getAllCategories(from, size));
     }
 
     @GetMapping(CAT_PUBLIC_PATH + "/{catId}")
-    public ResponseEntity<Category> getCategoryById(@PathVariable("catId") Long catId) {
+    public ResponseEntity<CategoryDto> getCategoryById(@PathVariable("catId") Long catId) {
         return ResponseEntity.ok().body(categoryService.getCategoryById(catId));
     }
 }
