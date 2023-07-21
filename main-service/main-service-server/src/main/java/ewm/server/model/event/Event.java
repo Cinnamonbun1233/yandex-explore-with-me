@@ -1,6 +1,7 @@
 package ewm.server.model.event;
 
 import ewm.server.model.category.Category;
+import ewm.server.model.compilation.Compilation;
 import ewm.server.model.request.ParticipationRequest;
 import ewm.server.model.user.User;
 import lombok.AccessLevel;
@@ -16,6 +17,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "events")
@@ -70,4 +72,6 @@ public class Event {
             fetch = FetchType.LAZY
     )
     List<ParticipationRequest> requests;
+    @ManyToMany(mappedBy = "events")
+    Set<Compilation> compilations;
 }
