@@ -63,7 +63,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public EventFullDto updateEventUser(Long userId, Long eventId, UpdateEventRequest updateRequest) {
+    public EventFullDto updateEventPrivate(Long userId, Long eventId, UpdateEventRequest updateRequest) {
         checkIfUserExists(userId);
         Event toBeUpdated = getEvent(eventId);
         updateEvent(toBeUpdated, updateRequest);
@@ -129,6 +129,13 @@ public class EventServiceImpl implements EventService {
                     .sorted(comparator)
                     .collect(Collectors.toList());
         }
+    }
+
+    @Override
+    public EventFullDto getEventByIdPublic(Long id) {
+        Event eventFound = eventRepo.findById(id)
+                .orElseThrow(() -> {throw new EventNotFoundException("Event not found");});
+        return EventMapper.mapModelToFullDto(eventFound);
     }
 
     private Comparator<EventShortDto> makeComparator(String sort) {

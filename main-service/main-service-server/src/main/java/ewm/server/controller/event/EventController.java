@@ -38,10 +38,10 @@ public class EventController {
     }
 
     @PatchMapping(value = EVENT_PRIVATE_PATH + "/{eventId}")
-    public ResponseEntity<EventFullDto> updateEventUser(@PathVariable("userId") Long userId,
-                                                        @PathVariable("eventId") Long eventId,
-                                                        @Valid @RequestBody UpdateEventRequest updateRequest) {
-        return ResponseEntity.ok().body(eventService.updateEventUser(userId, eventId, updateRequest));
+    public ResponseEntity<EventFullDto> updateEventPrivate(@PathVariable("userId") Long userId,
+                                                           @PathVariable("eventId") Long eventId,
+                                                           @Valid @RequestBody UpdateEventRequest updateRequest) {
+        return ResponseEntity.ok().body(eventService.updateEventPrivate(userId, eventId, updateRequest));
     }
 
     @GetMapping(EVENT_ADMIN_PATH)
@@ -75,5 +75,10 @@ public class EventController {
                                                                   @RequestParam(name = "size", required = false, defaultValue = "10") int size) {
         return ResponseEntity.ok().body(eventService.searchEventsPublic(text, categories, paid, rangeStart, rangeEnd,
                 onlyAvailable, sort, from, size));
+    }
+
+    @GetMapping(EVENT_PUBLIC_PATH + "/{id}")
+    public ResponseEntity<EventFullDto> getEventByIdPublic(@PathVariable("id") Long id) {
+        return ResponseEntity.ok().body(eventService.getEventByIdPublic(id));
     }
 }
