@@ -31,6 +31,6 @@ public class NewEventDto {
     String eventDate;
     LocationDto location;
     Boolean paid;
-    int participantLimit;
+    Integer participantLimit;
     Boolean requestModeration;
 }

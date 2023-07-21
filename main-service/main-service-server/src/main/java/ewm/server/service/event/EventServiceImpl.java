@@ -54,6 +54,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public EventFullDto addEvent(Long userId, NewEventDto newEventDto) {
         Event newEvent = EventMapper.mapDtoToModel(newEventDto);
+        validateEventDate(newEvent.getEventDate());
         newEvent.setCategory(getCategory(newEventDto.getCategory()));
         newEvent.setLocation(saveLocation(newEventDto.getLocation()));
         newEvent.setInitiator(getInitiator(userId));
@@ -169,6 +170,12 @@ public class EventServiceImpl implements EventService {
         return eventFound.getRequests().stream().map(RequestMapper::mapModelToDto).collect(Collectors.toList());
     }
 
+    private void validateEventDate(LocalDateTime eventDate) {
+        if(LocalDateTime.now().minusHours(2).isAfter(eventDate) || eventDate.isBefore(LocalDateTime.now())) {
+            throw new IllegalDatesException("Event date has to be at least 2 hours after current moment");
+        }
+    }
+
     private List<ParticipationRequest> makeListOfRequestsToBeUpdated(Long eventId,
                                                                      EventRequestStatusUpdateRequest request) {
         QParticipationRequest qRequest = QParticipationRequest.participationRequest;
@@ -205,7 +212,7 @@ public class EventServiceImpl implements EventService {
         categories.ifPresent(categoryIds -> builder.and(qEvent.category.id.in(categoryIds)));
         rangeStart.ifPresent(start -> builder.and(qEvent.eventDate.after(parseDateTime(start))));
         rangeEnd.ifPresent(end -> builder.and(qEvent.eventDate.before(parseDateTime(end))));
-        return Expressions.asBoolean(builder.getValue());
+        return builder.getValue() != null ? Expressions.asBoolean(builder.getValue()) : qEvent.isNotNull();
     }
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
@@ -220,7 +227,7 @@ public class EventServiceImpl implements EventService {
         });
         categories.ifPresent(categoryIds -> builder.and(qEvent.category.id.in(categoryIds)));
         if(rangeStart.isPresent() && rangeEnd.isPresent()) {
-            validateDates(rangeStart.get(), rangeEnd.get());
+            validateSearchDates(rangeStart.get(), rangeEnd.get());
         }
         rangeStart.ifPresent(start -> builder.and(qEvent.eventDate.after(parseDateTime(start))));
         rangeEnd.ifPresent(end -> builder.and(qEvent.eventDate.before(parseDateTime(end))));
@@ -231,7 +238,7 @@ public class EventServiceImpl implements EventService {
         return Expressions.asBoolean(builder.getValue());
     }
 
-    private void validateDates(String rangeStart, String rangeEnd) {
+    private void validateSearchDates(String rangeStart, String rangeEnd) {
         if(parseDateTime(rangeStart).isAfter(parseDateTime(rangeEnd))) {
             throw new IllegalDatesException("Range start has to be after range end");
         }
@@ -331,7 +338,9 @@ public class EventServiceImpl implements EventService {
 
     private void updateEventDate(Event toBeUpdated, UpdateEventRequest updateRequest) {
         if (updateRequest.getEventDate() != null) {
-            toBeUpdated.setEventDate(LocalDateTime.parse(updateRequest.getEventDate(), REQUEST_TIME_FORMAT));
+            LocalDateTime newDateTime = LocalDateTime.parse(updateRequest.getEventDate(), REQUEST_TIME_FORMAT);
+            validateEventDate(newDateTime);
+            toBeUpdated.setEventDate(newDateTime);
         }
     }
 

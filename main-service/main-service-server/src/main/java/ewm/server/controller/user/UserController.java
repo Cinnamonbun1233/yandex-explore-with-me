@@ -1,6 +1,7 @@
 package ewm.server.controller.user;
 
-import ewm.server.model.user.User;
+import ewm.server.dto.user.NewUserRequest;
+import ewm.server.dto.user.UserDto;
 import ewm.server.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,14 +22,14 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<User> addUser(@Valid @RequestBody User user) {
+    public ResponseEntity<UserDto> addUser(@Valid @RequestBody NewUserRequest user) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.addUser(user));
     }
 
     @GetMapping
-    public ResponseEntity<List<User>> getUsers(@RequestParam(required = false) Long[] ids,
-                                               @RequestParam(required = false, defaultValue = "0") Integer from,
-                                               @RequestParam(required = false, defaultValue = "10") Integer size) {
+    public ResponseEntity<List<UserDto>> getUsers(@RequestParam(required = false) Long[] ids,
+                                                  @RequestParam(required = false, defaultValue = "0") Integer from,
+                                                  @RequestParam(required = false, defaultValue = "10") Integer size) {
         return ResponseEntity.ok().body(userService.getUsers(ids, from, size));
     }
 

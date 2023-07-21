@@ -1,13 +1,14 @@
 package ewm.server.service.user;
 
-import ewm.server.model.user.User;
+import ewm.server.dto.user.NewUserRequest;
+import ewm.server.dto.user.UserDto;
 
 import java.util.List;
 
 public interface UserService {
-    User addUser(User user);
+    UserDto addUser(NewUserRequest user);
 
-    List<User> getUsers(Long[] ids, Integer from, Integer size);
+    List<UserDto> getUsers(Long[] ids, Integer from, Integer size);
 
     void deleteUserById(Long userId);
 }
