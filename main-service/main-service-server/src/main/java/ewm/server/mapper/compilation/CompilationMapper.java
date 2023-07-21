@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 public class CompilationMapper {
     public static Compilation mapDtoToModel(NewCompilationDto dto) {
         Compilation compilation = new Compilation();
-        compilation.setPinned(dto.getPinned());
+        compilation.setPinned(dto.getPinned() != null && dto.getPinned());
         compilation.setTitle(dto.getTitle());
         return compilation;
     }

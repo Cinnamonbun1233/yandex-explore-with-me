@@ -30,8 +30,12 @@ public class CompilationServiceImpl implements CompilationService {
     public CompilationDto addCompilation(NewCompilationDto newCompilationDto) {
         //checkIfAllEventsExist(newCompilationDto.getEvents());
         Compilation toBeAdded = CompilationMapper.mapDtoToModel(newCompilationDto);
-        List<Event> eventsToBeCompiled = eventRepo.findAllById(newCompilationDto.getEvents());
-        toBeAdded.setEvents(new HashSet<>(eventsToBeCompiled));
+        if(newCompilationDto.getEvents() != null) {
+            List<Event> eventsToBeCompiled = eventRepo.findAllById(newCompilationDto.getEvents());
+            toBeAdded.setEvents(new HashSet<>(eventsToBeCompiled));
+        } else {
+            toBeAdded.setEvents(new HashSet<>());
+        }
         return CompilationMapper.mapModelToDto(compilationRepo.save(toBeAdded));
     }
 
@@ -54,20 +58,41 @@ public class CompilationServiceImpl implements CompilationService {
         return CompilationMapper.mapModelToDto(compilationFound);
     }
 
+    @Override
+    public List<CompilationDto> getAllCompilations(Optional<Boolean> pinned, int from, int size) {
+        Pageable request = makePageRequest(from, size);
+        List<Compilation> compilations;
+        if(pinned.isEmpty()) {
+            compilations = compilationRepo.findAll(request).getContent();
+        } else {
+            compilations = compilationRepo.findAllByPinned(pinned.get());
+        }
+        return compilations.stream().map(CompilationMapper::mapModelToDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteCompilation(Long compId) {
+        compilationRepo.deleteById(compId);
+    }
+
+    private Pageable makePageRequest(int from, int size) {
+        return PageRequest.of(from > 0 ? from / size : 0, size);
+    }
+
     private void updateTitle(Compilation toBeUpdated, UpdateCompilationRequest request) {
-        if (request.getTitle() != null) {
+        if(request.getTitle() != null) {
             toBeUpdated.setTitle(request.getTitle());
         }
     }
 
     private void updatePinned(Compilation toBeUpdated, UpdateCompilationRequest request) {
-        if (request.getPinned() != null) {
+        if(request.getPinned() != null) {
             toBeUpdated.setPinned(request.getPinned());
         }
     }
 
     private void updateEvents(Compilation toBeUpdated, UpdateCompilationRequest request) {
-        if (request.getEvents() != null) {
+        if(request.getEvents() != null) {
             //checkIfAllEventsExist(request.getEvents());
             List<Event> eventsToBeUpdated = eventRepo.findAllById(request.getEvents());
             toBeUpdated.setEvents(new HashSet<>(eventsToBeUpdated));
@@ -76,31 +101,8 @@ public class CompilationServiceImpl implements CompilationService {
 
     //TODO: to fix
     private void checkIfAllEventsExist(List<Long> events) {
-        if (eventRepo.findAllById(events).size() == 0) {
+        if(eventRepo.findAllById(events).size() == 0) {
             throw new EventNotFoundException("One of events does not exist");
         }
     }
-
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    @Override
-    public List<CompilationDto> getAllCompilations(Optional<Boolean> pinned, int from, int size) {
-        Pageable request = makePageRequest(from, size);
-        List<Compilation> compilations;
-        if (pinned.isEmpty()) {
-            compilations = compilationRepo.findAll(request).getContent();
-        } else {
-            compilations = compilationRepo.findAllByPinned(pinned.get());
-        }
-        return compilations.stream().map(CompilationMapper::mapModelToDto).collect(Collectors.toList());
-    }
-
-    private Pageable makePageRequest(int from, int size) {
-        return PageRequest.of(from > 0 ? from / size : 0, size);
-    }
-
-    @Override
-    public void deleteCompilation(Long compId) {
-        compilationRepo.deleteById(compId);
-    }
-
 }

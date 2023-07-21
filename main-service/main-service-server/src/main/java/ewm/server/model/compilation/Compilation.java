@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
 import java.util.Set;
@@ -22,7 +21,6 @@ public class Compilation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
     @Column(name = "title")
-    @Length(max = 50)
     String title;
     @Column(name = "pinned")
     Boolean pinned;
