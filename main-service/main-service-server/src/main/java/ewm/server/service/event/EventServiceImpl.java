@@ -4,6 +4,7 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import ewm.server.dto.event.*;
+import ewm.server.dto.request.ParticipationRequestDto;
 import ewm.server.exception.category.CategoryNotFoundException;
 import ewm.server.exception.event.EventNotFoundException;
 import ewm.server.exception.event.UnknownActionException;
@@ -371,5 +372,14 @@ public class EventServiceImpl implements EventService {
         } catch (IllegalArgumentException e) {
             throw new UnknownActionException("Status is unknown");
         }
+    }
+
+    @Override
+    public List<ParticipationRequestDto> getRequestsToUsersEvent(Long userId, Long eventId) {
+        checkIfUserExists(userId);
+        Event eventFound = eventRepo.findById(eventId).orElseThrow(() -> {
+            throw new EventNotFoundException("Event does not exist");
+        });
+        return eventFound.getRequests().stream().map(RequestMapper::mapModelToDto).collect(Collectors.toList());
     }
 }
