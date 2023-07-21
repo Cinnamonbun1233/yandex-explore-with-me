@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class CompilationController {
@@ -36,5 +38,12 @@ public class CompilationController {
     @GetMapping(COMPILATIONS_PUBLIC_PATH + "/{compId}")
     public ResponseEntity<CompilationDto> getCompilationById(@PathVariable("compId") Long compId) {
         return ResponseEntity.ok().body(compilationService.getCompilationById(compId));
+    }
+
+    @GetMapping(COMPILATIONS_PUBLIC_PATH)
+    public ResponseEntity<List<CompilationDto>> getAllCompilations(@RequestParam(name = "pinned", required = false) Optional<Boolean> pinned,
+                                                                   @RequestParam(name = "from", required = false, defaultValue = "0") int from,
+                                                                   @RequestParam(name = "size", required = false, defaultValue = "10") int size) {
+        return ResponseEntity.ok().body(compilationService.getAllCompilations(pinned, from, size));
     }
 }

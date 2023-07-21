@@ -11,10 +11,14 @@ import ewm.server.model.event.Event;
 import ewm.server.repo.compilation.CompilationRepo;
 import ewm.server.repo.event.EventRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -75,5 +79,22 @@ public class CompilationServiceImpl implements CompilationService {
         if(eventRepo.findAllById(events).size() == 0) {
             throw new EventNotFoundException("One of events does not exist");
         }
+    }
+
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    @Override
+    public List<CompilationDto> getAllCompilations(Optional<Boolean> pinned, int from, int size) {
+        Pageable request = makePageRequest(from, size);
+        List<Compilation> compilations;
+        if(pinned.isEmpty()) {
+            compilations = compilationRepo.findAll(request).getContent();
+        } else {
+            compilations = compilationRepo.findAllByPinned(pinned.get());
+        }
+        return compilations.stream().map(CompilationMapper::mapModelToDto).collect(Collectors.toList());
+    }
+
+    private Pageable makePageRequest(int from, int size) {
+        return PageRequest.of(from > 0 ? from / size : 0, size);
     }
 }
