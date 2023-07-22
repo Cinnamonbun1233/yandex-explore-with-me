@@ -152,7 +152,7 @@ public class EventServiceImpl implements EventService {
                 .uri(uri)
                 .app("ewm-main-service")
                 .timestamp(LocalDateTime.now().format(REQUEST_TIME_FORMAT))
-                .build());
+                .build()).block();
     }
 
     private Integer getViewsFromStats(Long id) {
