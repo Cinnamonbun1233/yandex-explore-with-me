@@ -1,5 +1,6 @@
 package ewm.server.service.compilation;
 
+import ewm.client.StatsClient;
 import ewm.server.dto.compilation.CompilationDto;
 import ewm.server.dto.compilation.NewCompilationDto;
 import ewm.server.dto.compilation.UpdateCompilationRequest;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 public class CompilationServiceImpl implements CompilationService {
     private final CompilationRepo compilationRepo;
     private final EventRepo eventRepo;
+    private final StatsClient statsClient;
 
     @Override
     public CompilationDto addCompilation(NewCompilationDto newCompilationDto) {
@@ -34,7 +36,7 @@ public class CompilationServiceImpl implements CompilationService {
         } else {
             toBeAdded.setEvents(new HashSet<>());
         }
-        return CompilationMapper.mapModelToDto(compilationRepo.save(toBeAdded));
+        return CompilationMapper.mapModelToDto(compilationRepo.save(toBeAdded), statsClient);
     }
 
     @Override
@@ -45,7 +47,7 @@ public class CompilationServiceImpl implements CompilationService {
         updateEvents(toBeUpdated, request);
         updatePinned(toBeUpdated, request);
         updateTitle(toBeUpdated, request);
-        return CompilationMapper.mapModelToDto(compilationRepo.save(toBeUpdated));
+        return CompilationMapper.mapModelToDto(compilationRepo.save(toBeUpdated), statsClient);
     }
 
     @Override
@@ -53,7 +55,7 @@ public class CompilationServiceImpl implements CompilationService {
         Compilation compilationFound = compilationRepo.findById(compId).orElseThrow(() -> {
             throw new CompilationNotFoundException("Compilation does not exist");
         });
-        return CompilationMapper.mapModelToDto(compilationFound);
+        return CompilationMapper.mapModelToDto(compilationFound, statsClient);
     }
 
     @Override
@@ -65,7 +67,8 @@ public class CompilationServiceImpl implements CompilationService {
         } else {
             compilations = compilationRepo.findAllByPinned(pinned.get());
         }
-        return compilations.stream().map(CompilationMapper::mapModelToDto).collect(Collectors.toList());
+        return compilations.stream().map(c -> CompilationMapper.mapModelToDto(c, statsClient))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -91,7 +94,6 @@ public class CompilationServiceImpl implements CompilationService {
 
     private void updateEvents(Compilation toBeUpdated, UpdateCompilationRequest request) {
         if (request.getEvents() != null) {
-            //checkIfAllEventsExist(request.getEvents());
             List<Event> eventsToBeUpdated = eventRepo.findAllById(request.getEvents());
             toBeUpdated.setEvents(new HashSet<>(eventsToBeUpdated));
         }
