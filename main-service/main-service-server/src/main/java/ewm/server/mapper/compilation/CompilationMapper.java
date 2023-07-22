@@ -21,7 +21,8 @@ public class CompilationMapper {
                 .title(model.getTitle())
                 .pinned(model.getPinned())
                 .events(model.getEvents().stream()
-                        .map(EventMapper::mapModelToShortDto)
+                        //TODO - to fix
+                        .map(e -> EventMapper.mapModelToShortDto(e, 0))
                         .collect(Collectors.toList()))
                 .build();
     }

@@ -43,7 +43,7 @@ public class EventMapper {
         return event;
     }
 
-    public static EventFullDto mapModelToFullDto(Event event) {
+    public static EventFullDto mapModelToFullDto(Event event, Integer views) {
         return EventFullDto.builder()
                 .id(event.getId())
                 .annotation(event.getAnnotation())
@@ -55,8 +55,7 @@ public class EventMapper {
                 .eventDate(event.getEventDate().format(REQUEST_TIME_FORMAT))
                 .state(event.getEventStatus())
                 .title(event.getTitle())
-                //TODO: get from stats
-                .views(0)
+                .views(views)
                 .initiator(UserMapper.mapModelToShortDto(event.getInitiator()))
                 .location(LocationMapper.mapModelToDto(event.getLocation()))
                 .participantLimit(event.getParticipationLimit())
@@ -65,7 +64,7 @@ public class EventMapper {
                 .build();
     }
 
-    public static EventShortDto mapModelToShortDto(Event event) {
+    public static EventShortDto mapModelToShortDto(Event event, Integer views) {
         return EventShortDto.builder()
                 .id(event.getId())
                 .annotation(event.getAnnotation())
@@ -75,8 +74,7 @@ public class EventMapper {
                 .initiator(UserMapper.mapModelToShortDto(event.getInitiator()))
                 .paid(event.getPaid())
                 .title(event.getTitle())
-                //TODO: get from stats
-                .views(0)
+                .views(views)
                 .build();
     }
 }

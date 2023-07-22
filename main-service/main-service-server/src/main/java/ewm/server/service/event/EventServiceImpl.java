@@ -4,6 +4,8 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import ewm.client.StatsClient;
+import ewm.dto.StatsRequestDto;
+import ewm.dto.StatsResponseDto;
 import ewm.server.dto.event.*;
 import ewm.server.dto.request.ParticipationRequestDto;
 import ewm.server.exception.category.CategoryNotFoundException;
@@ -64,7 +66,8 @@ public class EventServiceImpl implements EventService {
         newEvent.setInitiator(getInitiator(userId));
         newEvent.setCreatedOn(LocalDateTime.now());
         newEvent.setEventStatus(EventStatus.PENDING);
-        return EventMapper.mapModelToFullDto(eventRepo.save(newEvent));
+        Event savedEvent = eventRepo.save(newEvent);
+        return EventMapper.mapModelToFullDto(savedEvent, getViewsFromStats(savedEvent.getId()));
     }
 
     @Override
@@ -72,7 +75,8 @@ public class EventServiceImpl implements EventService {
         Event toBeUpdated = getEvent(eventId);
         updateEvent(toBeUpdated, updateRequest);
         updateStatusAdmin(toBeUpdated, updateRequest);
-        return EventMapper.mapModelToFullDto(eventRepo.save(toBeUpdated));
+        Event savedEvent = eventRepo.save(toBeUpdated);
+        return EventMapper.mapModelToFullDto(savedEvent, getViewsFromStats(savedEvent.getId()));
     }
 
     @Override
@@ -82,7 +86,8 @@ public class EventServiceImpl implements EventService {
         checkIfEventAlreadyPublished(toBeUpdated);
         updateEvent(toBeUpdated, updateRequest);
         updateStatusUser(toBeUpdated, updateRequest);
-        return EventMapper.mapModelToFullDto(eventRepo.save(toBeUpdated));
+        Event savedEvent = eventRepo.save(toBeUpdated);
+        return EventMapper.mapModelToFullDto(savedEvent, getViewsFromStats(savedEvent.getId()));
     }
 
     @Override
@@ -93,7 +98,7 @@ public class EventServiceImpl implements EventService {
         BooleanExpression searchExp = makeSearchExpAdmin(users, states, categories, rangeStart, rangeEnd);
         return eventRepo.findAll(searchExp, request).stream()
                 .sorted(Comparator.comparing(Event::getEventDate))
-                .map(EventMapper::mapModelToFullDto)
+                .map(e -> EventMapper.mapModelToFullDto(e, getViewsFromStats(e.getId())))
                 .collect(Collectors.toList());
     }
 
@@ -103,7 +108,7 @@ public class EventServiceImpl implements EventService {
         BooleanExpression byUserId = QEvent.event.initiator.id.eq(userId);
         return eventRepo.findAll(byUserId, request).stream()
                 .sorted(Comparator.comparing(Event::getEventDate))
-                .map(EventMapper::mapModelToShortDto)
+                .map(e -> EventMapper.mapModelToShortDto(e, getViewsFromStats(e.getId())))
                 .collect(Collectors.toList());
     }
 
@@ -112,6 +117,7 @@ public class EventServiceImpl implements EventService {
                                                   Optional<Boolean> paid, Optional<String> rangeStart,
                                                   Optional<String> rangeEnd, Boolean onlyAvailable,
                                                   String sort, int from, int size) {
+        saveStats("/events");
         Pageable request = makePageRequest(from, size);
         BooleanExpression searchExp = makeSearchExpPublic(text, categories, paid, rangeStart, rangeEnd);
         Comparator<EventShortDto> comparator = makeComparator(sort);
@@ -120,12 +126,12 @@ public class EventServiceImpl implements EventService {
                     .filter(e -> e.getRequests().stream()
                                          .filter(r -> r.getRequestStatus().equals(RequestStatus.CONFIRMED))
                                          .count() < e.getParticipationLimit())
-                    .map(EventMapper::mapModelToShortDto)
+                    .map(e -> EventMapper.mapModelToShortDto(e, getViewsFromStats(e.getId())))
                     .sorted(comparator)
                     .collect(Collectors.toList());
         } else {
             return eventRepo.findAll(searchExp, request).stream()
-                    .map(EventMapper::mapModelToShortDto)
+                    .map(e -> EventMapper.mapModelToShortDto(e, getViewsFromStats(e.getId())))
                     .sorted(comparator)
                     .collect(Collectors.toList());
         }
@@ -133,17 +139,37 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventFullDto getEventByIdPublic(Long id) {
+        saveStats(String.format("/events/%d", id));
         Event eventFound = eventRepo.findByIdAndEventStatus(id, EventStatus.PUBLISHED)
-                .orElseThrow(() -> {throw new EventNotFoundException("Event not found");});
-        return EventMapper.mapModelToFullDto(eventFound);
+                .orElseThrow(() -> {
+                    throw new EventNotFoundException("Event not found");
+                });
+        return EventMapper.mapModelToFullDto(eventFound, getViewsFromStats(eventFound.getId()));
+    }
+
+    private void saveStats(String uri) {
+        statsClient.saveRecord(StatsRequestDto.builder()
+                .uri(uri)
+                .app("ewm-main-service")
+                .timestamp(LocalDateTime.now().format(REQUEST_TIME_FORMAT))
+                .build());
+    }
+
+    private Integer getViewsFromStats(Long id) {
+        StatsResponseDto stats = statsClient.getStats("2000-01-01 00:00:00",
+                "2100-01-01 00:00:00",
+                new String[]{String.format("/events/%d", id)}, "true").blockFirst();
+        return stats == null ? 0 : stats.getHits().intValue();
     }
 
     @Override
     public EventFullDto getEventByIdPrivate(Long userId, Long eventId) {
         checkIfUserExists(userId);
         Event eventFound = eventRepo.findById(eventId)
-                .orElseThrow(() -> {throw new EventNotFoundException("Event not found");});
-        return EventMapper.mapModelToFullDto(eventFound);
+                .orElseThrow(() -> {
+                    throw new EventNotFoundException("Event not found");
+                });
+        return EventMapper.mapModelToFullDto(eventFound, getViewsFromStats(eventFound.getId()));
     }
 
     @Override
@@ -170,7 +196,7 @@ public class EventServiceImpl implements EventService {
     private void checkIfUpdateRequestIsValid(RequestStatus status, List<ParticipationRequest> toBeUpdated) {
         switch (status) {
             case CONFIRMED:
-                if(toBeUpdated.stream()
+                if (toBeUpdated.stream()
                         .anyMatch(r -> r.getEvent().getParticipationLimit() != 0 &&
                                        r.getEvent().getParticipationLimit() == r.getEvent().getRequests().stream()
                                                .filter(r1 -> r1.getRequestStatus().equals(RequestStatus.CONFIRMED))
@@ -179,7 +205,7 @@ public class EventServiceImpl implements EventService {
                 }
                 break;
             case REJECTED:
-                if(toBeUpdated.stream()
+                if (toBeUpdated.stream()
                         .anyMatch(r -> r.getRequestStatus().equals(RequestStatus.CONFIRMED))) {
                     throw new IllegalRequestException("One of requests has been already confirmed");
                 }
@@ -197,7 +223,7 @@ public class EventServiceImpl implements EventService {
     }
 
     private void validateEventDate(LocalDateTime eventDate) {
-        if(LocalDateTime.now().minusHours(2).isAfter(eventDate) || eventDate.isBefore(LocalDateTime.now())) {
+        if (LocalDateTime.now().minusHours(2).isAfter(eventDate) || eventDate.isBefore(LocalDateTime.now())) {
             throw new IllegalDatesException("Event date has to be at least 2 hours after current moment");
         }
     }
@@ -252,7 +278,7 @@ public class EventServiceImpl implements EventService {
             builder.and(annotationContainsText.or(descriptionContainsText));
         });
         categories.ifPresent(categoryIds -> builder.and(qEvent.category.id.in(categoryIds)));
-        if(rangeStart.isPresent() && rangeEnd.isPresent()) {
+        if (rangeStart.isPresent() && rangeEnd.isPresent()) {
             validateSearchDates(rangeStart.get(), rangeEnd.get());
         }
         rangeStart.ifPresent(start -> builder.and(qEvent.eventDate.after(parseDateTime(start))));
@@ -265,7 +291,7 @@ public class EventServiceImpl implements EventService {
     }
 
     private void validateSearchDates(String rangeStart, String rangeEnd) {
-        if(parseDateTime(rangeStart).isAfter(parseDateTime(rangeEnd))) {
+        if (parseDateTime(rangeStart).isAfter(parseDateTime(rangeEnd))) {
             throw new IllegalDatesException("Range start has to be after range end");
         }
     }
@@ -327,13 +353,13 @@ public class EventServiceImpl implements EventService {
     }
 
     private void checkIfEventIsCanceled(Event toBeUpdated) {
-        if(toBeUpdated.getEventStatus().equals(EventStatus.CANCELED)) {
+        if (toBeUpdated.getEventStatus().equals(EventStatus.CANCELED)) {
             throw new IllegalPublicationException("Event is canceled and may not be published");
         }
     }
 
     private void checkIfEventAlreadyPublished(Event toBeUpdated) {
-        if(toBeUpdated.getEventStatus().equals(EventStatus.PUBLISHED)) {
+        if (toBeUpdated.getEventStatus().equals(EventStatus.PUBLISHED)) {
             throw new IllegalPublicationException("Event is already published");
         }
     }
