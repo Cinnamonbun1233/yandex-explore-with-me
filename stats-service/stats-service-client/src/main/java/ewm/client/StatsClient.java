@@ -1,4 +1,4 @@
-package ewm.client.client;
+package ewm.client;
 
 import ewm.dto.StatsRequestDto;
 import ewm.dto.StatsResponseDto;
