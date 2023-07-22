@@ -185,7 +185,8 @@ public class EventServiceImpl implements EventService {
         List<ParticipationRequest> toBeUpdated = makeListOfRequestsToBeUpdated(eventId, request);
         checkIfUpdateRequestIsValid(status, toBeUpdated);
         toBeUpdated.forEach(r -> r.setRequestStatus(status));
-        requestRepo.saveAllAndFlush(toBeUpdated);
+        List<ParticipationRequest> updatedRequests = requestRepo.saveAllAndFlush(toBeUpdated);
+        rejectPendingRequestsIfParticipantLimitIsReached(updatedRequests);
         return EventRequestStatusUpdateResult.builder()
                 .confirmedRequests(requestRepo.findAllByRequestStatusAndEvent_Id(RequestStatus.CONFIRMED, eventId)
                         .stream()
@@ -198,23 +199,28 @@ public class EventServiceImpl implements EventService {
                 .build();
     }
 
+    private void rejectPendingRequestsIfParticipantLimitIsReached(List<ParticipationRequest> updatedRequests) {
+        updatedRequests.stream()
+                .filter(r -> r.getEvent().getParticipationLimit() != 0 &&
+                             r.getEvent().getParticipationLimit() == r.getEvent().getRequests().stream()
+                                     .filter(r1 -> r1.getRequestStatus().equals(RequestStatus.CONFIRMED))
+                                     .count())
+                .filter(r -> r.getRequestStatus().equals(RequestStatus.PENDING))
+                .forEach(r -> r.setRequestStatus(RequestStatus.REJECTED));
+        requestRepo.saveAllAndFlush(updatedRequests);
+    }
+
     private void checkIfUpdateRequestIsValid(RequestStatus status, List<ParticipationRequest> toBeUpdated) {
-        switch (status) {
-            case CONFIRMED:
-                if (toBeUpdated.stream()
-                        .anyMatch(r -> r.getEvent().getParticipationLimit() != 0 &&
-                                       r.getEvent().getParticipationLimit() == r.getEvent().getRequests().stream()
-                                               .filter(r1 -> r1.getRequestStatus().equals(RequestStatus.CONFIRMED))
-                                               .count())) {
-                    throw new IllegalRequestException("Participant limit to one of events has been already reached");
-                }
-                break;
-            case REJECTED:
-                if (toBeUpdated.stream()
-                        .anyMatch(r -> r.getRequestStatus().equals(RequestStatus.CONFIRMED))) {
-                    throw new IllegalRequestException("One of requests has been already confirmed");
-                }
-                break;
+        if(toBeUpdated.stream().anyMatch(r -> !r.getRequestStatus().equals(RequestStatus.PENDING))) {
+            throw new IllegalRequestException("Status update is available for pending requests only");
+        }
+        if (status.equals(RequestStatus.CONFIRMED) && toBeUpdated.stream()
+                .anyMatch(r -> r.getEvent().getParticipationLimit() != 0 &&
+                               r.getEvent().getParticipationLimit() == r.getEvent().getRequests().stream()
+                                       .filter(r1 -> r1.getRequestStatus().equals(RequestStatus.CONFIRMED))
+                                       .count())
+        ) {
+            throw new IllegalRequestException("Participant limit to one of events has been already reached");
         }
     }
 
