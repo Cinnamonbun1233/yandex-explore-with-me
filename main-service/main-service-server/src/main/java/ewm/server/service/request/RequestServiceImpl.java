@@ -3,10 +3,12 @@ package ewm.server.service.request;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import ewm.server.dto.request.ParticipationRequestDto;
 import ewm.server.exception.event.EventNotFoundException;
+import ewm.server.exception.request.IllegalRequestException;
 import ewm.server.exception.request.RequestNotFoundException;
 import ewm.server.exception.user.UserNotFoundException;
 import ewm.server.mapper.request.RequestMapper;
 import ewm.server.model.event.Event;
+import ewm.server.model.event.EventStatus;
 import ewm.server.model.request.ParticipationRequest;
 import ewm.server.model.request.QParticipationRequest;
 import ewm.server.model.request.RequestStatus;
@@ -30,10 +32,14 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public ParticipationRequestDto addRequest(Long userId, Long eventId) {
+        checkIfRequestWasAlreadyCreated(userId, eventId);
+        checkIfInitiatorIsCreatingRequest(userId, eventId);
         ParticipationRequest newRequest = new ParticipationRequest();
         Event eventFound = eventRepo.findById(eventId).orElseThrow(() -> {
             throw new EventNotFoundException("Event does not exist");
         });
+        checkIfEventIsPublished(eventFound);
+        checkIfParticipantLimitIsFull(eventFound);
         newRequest.setRequester(userRepo.findById(userId).orElseThrow(() -> {
             throw new UserNotFoundException("User does not exist");
         }));
@@ -45,6 +51,30 @@ public class RequestServiceImpl implements RequestService {
         }
         newRequest.setCreated(LocalDateTime.now());
         return RequestMapper.mapModelToDto(requestRepo.save(newRequest));
+    }
+
+    private void checkIfParticipantLimitIsFull(Event eventFound) {
+        if(eventFound.getParticipationLimit() == eventFound.getRequests().size()) {
+            throw new IllegalRequestException("Participant limit has been reached");
+        }
+    }
+
+    private void checkIfEventIsPublished(Event event) {
+        if(!event.getEventStatus().equals(EventStatus.PUBLISHED)) {
+            throw new IllegalRequestException("Event has not been published yet");
+        }
+    }
+
+    private void checkIfInitiatorIsCreatingRequest(Long userId, Long eventId) {
+        if(eventRepo.findById(eventId).orElseThrow().getInitiator().getId() == userId) {
+            throw new IllegalRequestException("Initiator may not create request to participate in his own event");
+        }
+    }
+
+    private void checkIfRequestWasAlreadyCreated(Long userId, Long eventId) {
+        if(requestRepo.findByRequester_IdAndEvent_Id(userId, eventId).isPresent()) {
+            throw new IllegalRequestException("Request was already created");
+        }
     }
 
     @Override
