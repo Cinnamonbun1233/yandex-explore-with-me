@@ -3,6 +3,7 @@ package ewm.server.service.event;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
+import ewm.client.StatsClient;
 import ewm.server.dto.event.*;
 import ewm.server.dto.request.ParticipationRequestDto;
 import ewm.server.exception.category.CategoryNotFoundException;
@@ -52,6 +53,7 @@ public class EventServiceImpl implements EventService {
     private final EventRepo eventRepo;
     private final LocationRepo locationRepo;
     private final RequestRepo requestRepo;
+    private final StatsClient statsClient;
 
     @Override
     public EventFullDto addEvent(Long userId, NewEventDto newEventDto) {
