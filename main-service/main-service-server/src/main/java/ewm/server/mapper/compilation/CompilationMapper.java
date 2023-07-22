@@ -21,7 +21,7 @@ public class CompilationMapper {
                 .title(model.getTitle())
                 .pinned(model.getPinned())
                 .events(model.getEvents().stream()
-                        //TODO - to fix
+                        //TODO - to fix - views to be properly set
                         .map(e -> EventMapper.mapModelToShortDto(e, 0))
                         .collect(Collectors.toList()))
                 .build();

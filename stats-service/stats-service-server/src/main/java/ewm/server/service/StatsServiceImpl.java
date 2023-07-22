@@ -2,13 +2,13 @@ package ewm.server.service;
 
 import ewm.dto.StatsRequestDto;
 import ewm.dto.StatsResponseDto;
-import ewm.server.mapper.StatsMapper;
 import ewm.server.repo.StatsRepo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -26,9 +26,9 @@ public class StatsServiceImpl implements StatsService {
 
     @Override
     @Transactional
-    public void saveRecord(StatsRequestDto statsRequestDto) {
-        log.info("RECORD SAVED");
-        statsRepo.save(StatsMapper.mapRequestToModel(statsRequestDto));
+    public void saveRecord(StatsRequestDto request, HttpServletRequest meta) {
+        log.info(meta.getRemoteAddr());
+        request.setIp(meta.getRemoteAddr());
     }
 
     @Override

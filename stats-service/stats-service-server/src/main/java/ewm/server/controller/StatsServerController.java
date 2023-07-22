@@ -6,6 +6,7 @@ import ewm.server.service.StatsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController
@@ -18,8 +19,8 @@ public class StatsServerController {
     }
 
     @PostMapping(value = "/hit")
-    public void addHit(@RequestBody StatsRequestDto statsRequestDto) {
-        statsService.saveRecord(statsRequestDto);
+    public void addHit(@RequestBody StatsRequestDto request, HttpServletRequest meta) {
+        statsService.saveRecord(request, meta);
     }
 
     @GetMapping("/stats")
