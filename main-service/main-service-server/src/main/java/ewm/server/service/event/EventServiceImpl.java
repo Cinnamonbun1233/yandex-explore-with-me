@@ -10,6 +10,7 @@ import ewm.server.exception.event.EventNotFoundException;
 import ewm.server.exception.event.IllegalDatesException;
 import ewm.server.exception.event.IllegalPublicationException;
 import ewm.server.exception.event.UnknownActionException;
+import ewm.server.exception.request.IllegalRequestException;
 import ewm.server.exception.user.UserNotFoundException;
 import ewm.server.mapper.event.EventMapper;
 import ewm.server.mapper.event.LocationMapper;
@@ -149,6 +150,7 @@ public class EventServiceImpl implements EventService {
         checkIfUserExists(userId);
         RequestStatus status = parseRequestStatus(request.getStatus());
         List<ParticipationRequest> toBeUpdated = makeListOfRequestsToBeUpdated(eventId, request);
+        checkIfUpdateRequestIsValid(status, toBeUpdated);
         toBeUpdated.forEach(r -> r.setRequestStatus(status));
         requestRepo.saveAllAndFlush(toBeUpdated);
         return EventRequestStatusUpdateResult.builder()
@@ -161,6 +163,26 @@ public class EventServiceImpl implements EventService {
                         .map(RequestMapper::mapModelToDto)
                         .collect(Collectors.toList()))
                 .build();
+    }
+
+    private void checkIfUpdateRequestIsValid(RequestStatus status, List<ParticipationRequest> toBeUpdated) {
+        switch (status) {
+            case CONFIRMED:
+                if(toBeUpdated.stream()
+                        .anyMatch(r -> r.getEvent().getParticipationLimit() != 0 &&
+                                       r.getEvent().getParticipationLimit() == r.getEvent().getRequests().stream()
+                                               .filter(r1 -> r1.getRequestStatus().equals(RequestStatus.CONFIRMED))
+                                               .count())) {
+                    throw new IllegalRequestException("Participant limit to one of events has been already reached");
+                }
+                break;
+            case REJECTED:
+                if(toBeUpdated.stream()
+                        .anyMatch(r -> r.getRequestStatus().equals(RequestStatus.CONFIRMED))) {
+                    throw new IllegalRequestException("One of requests has been already confirmed");
+                }
+                break;
+        }
     }
 
     @Override

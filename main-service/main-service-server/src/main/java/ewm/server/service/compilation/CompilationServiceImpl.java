@@ -4,7 +4,6 @@ import ewm.server.dto.compilation.CompilationDto;
 import ewm.server.dto.compilation.NewCompilationDto;
 import ewm.server.dto.compilation.UpdateCompilationRequest;
 import ewm.server.exception.compilation.CompilationNotFoundException;
-import ewm.server.exception.event.EventNotFoundException;
 import ewm.server.mapper.compilation.CompilationMapper;
 import ewm.server.model.compilation.Compilation;
 import ewm.server.model.event.Event;
@@ -28,9 +27,8 @@ public class CompilationServiceImpl implements CompilationService {
 
     @Override
     public CompilationDto addCompilation(NewCompilationDto newCompilationDto) {
-        //checkIfAllEventsExist(newCompilationDto.getEvents());
         Compilation toBeAdded = CompilationMapper.mapDtoToModel(newCompilationDto);
-        if(newCompilationDto.getEvents() != null) {
+        if (newCompilationDto.getEvents() != null) {
             List<Event> eventsToBeCompiled = eventRepo.findAllById(newCompilationDto.getEvents());
             toBeAdded.setEvents(new HashSet<>(eventsToBeCompiled));
         } else {
@@ -62,7 +60,7 @@ public class CompilationServiceImpl implements CompilationService {
     public List<CompilationDto> getAllCompilations(Optional<Boolean> pinned, int from, int size) {
         Pageable request = makePageRequest(from, size);
         List<Compilation> compilations;
-        if(pinned.isEmpty()) {
+        if (pinned.isEmpty()) {
             compilations = compilationRepo.findAll(request).getContent();
         } else {
             compilations = compilationRepo.findAllByPinned(pinned.get());
@@ -80,29 +78,22 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     private void updateTitle(Compilation toBeUpdated, UpdateCompilationRequest request) {
-        if(request.getTitle() != null) {
+        if (request.getTitle() != null) {
             toBeUpdated.setTitle(request.getTitle());
         }
     }
 
     private void updatePinned(Compilation toBeUpdated, UpdateCompilationRequest request) {
-        if(request.getPinned() != null) {
+        if (request.getPinned() != null) {
             toBeUpdated.setPinned(request.getPinned());
         }
     }
 
     private void updateEvents(Compilation toBeUpdated, UpdateCompilationRequest request) {
-        if(request.getEvents() != null) {
+        if (request.getEvents() != null) {
             //checkIfAllEventsExist(request.getEvents());
             List<Event> eventsToBeUpdated = eventRepo.findAllById(request.getEvents());
             toBeUpdated.setEvents(new HashSet<>(eventsToBeUpdated));
-        }
-    }
-
-    //TODO: to fix
-    private void checkIfAllEventsExist(List<Long> events) {
-        if(eventRepo.findAllById(events).size() == 0) {
-            throw new EventNotFoundException("One of events does not exist");
         }
     }
 }

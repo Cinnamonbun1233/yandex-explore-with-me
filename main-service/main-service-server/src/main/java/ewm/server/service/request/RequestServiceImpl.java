@@ -44,7 +44,7 @@ public class RequestServiceImpl implements RequestService {
             throw new UserNotFoundException("User does not exist");
         }));
         newRequest.setEvent(eventFound);
-        if(eventFound.getParticipationLimit() == 0) {
+        if(eventFound.getParticipationLimit() == 0 || eventFound.getRequestModeration() == false) {
             newRequest.setRequestStatus(RequestStatus.CONFIRMED);
         } else {
             newRequest.setRequestStatus(RequestStatus.PENDING);
@@ -54,8 +54,11 @@ public class RequestServiceImpl implements RequestService {
     }
 
     private void checkIfParticipantLimitIsFull(Event eventFound) {
-        if(eventFound.getParticipationLimit() == eventFound.getRequests().size()) {
-            throw new IllegalRequestException("Participant limit has been reached");
+        if(eventFound.getParticipationLimit() != 0) {
+            if (eventFound.getParticipationLimit() == eventFound.getRequests().stream()
+                    .filter(r -> r.getRequestStatus().equals(RequestStatus.CONFIRMED)).count()) {
+                throw new IllegalRequestException("Participant limit has been reached");
+            }
         }
     }
 
