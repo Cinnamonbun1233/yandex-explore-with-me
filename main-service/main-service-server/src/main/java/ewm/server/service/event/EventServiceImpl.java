@@ -8,6 +8,7 @@ import ewm.server.dto.request.ParticipationRequestDto;
 import ewm.server.exception.category.CategoryNotFoundException;
 import ewm.server.exception.event.EventNotFoundException;
 import ewm.server.exception.event.IllegalDatesException;
+import ewm.server.exception.event.IllegalPublicationException;
 import ewm.server.exception.event.UnknownActionException;
 import ewm.server.exception.user.UserNotFoundException;
 import ewm.server.mapper.event.EventMapper;
@@ -75,6 +76,7 @@ public class EventServiceImpl implements EventService {
     public EventFullDto updateEventPrivate(Long userId, Long eventId, UpdateEventRequest updateRequest) {
         checkIfUserExists(userId);
         Event toBeUpdated = getEvent(eventId);
+        checkIfEventAlreadyPublished(toBeUpdated);
         updateEvent(toBeUpdated, updateRequest);
         updateStatusUser(toBeUpdated, updateRequest);
         return EventMapper.mapModelToFullDto(eventRepo.save(toBeUpdated));
@@ -288,12 +290,27 @@ public class EventServiceImpl implements EventService {
             StateAdminAction action = parseActionAdmin(updateRequest.getStateAction());
             switch (action) {
                 case PUBLISH_EVENT:
+                    checkIfEventAlreadyPublished(toBeUpdated);
+                    checkIfEventIsCanceled(toBeUpdated);
                     toBeUpdated.setEventStatus(EventStatus.PUBLISHED);
                     break;
                 case REJECT_EVENT:
+                    checkIfEventAlreadyPublished(toBeUpdated);
                     toBeUpdated.setEventStatus(EventStatus.CANCELED);
                     break;
             }
+        }
+    }
+
+    private void checkIfEventIsCanceled(Event toBeUpdated) {
+        if(toBeUpdated.getEventStatus().equals(EventStatus.CANCELED)) {
+            throw new IllegalPublicationException("Event is canceled and may not be published");
+        }
+    }
+
+    private void checkIfEventAlreadyPublished(Event toBeUpdated) {
+        if(toBeUpdated.getEventStatus().equals(EventStatus.PUBLISHED)) {
+            throw new IllegalPublicationException("Event is already published");
         }
     }
 
@@ -302,6 +319,7 @@ public class EventServiceImpl implements EventService {
             StateUserAction action = parseActionUser(updateRequest.getStateAction());
             switch (action) {
                 case CANCEL_REVIEW:
+                    checkIfEventAlreadyPublished(toBeUpdated);
                     toBeUpdated.setEventStatus(EventStatus.CANCELED);
                     break;
                 case SEND_TO_REVIEW:

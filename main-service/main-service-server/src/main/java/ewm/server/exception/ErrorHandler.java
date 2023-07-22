@@ -38,4 +38,11 @@ public class ErrorHandler {
         log.error(e.getMessage());
         return new ErrorResponse(e.getMessage());
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handeConflicts(final IllegalPublicationException e) {
+        log.error(e.getMessage());
+        return new ErrorResponse(e.getMessage());
+    }
 }
