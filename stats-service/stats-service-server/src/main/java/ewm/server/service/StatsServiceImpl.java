@@ -2,6 +2,7 @@ package ewm.server.service;
 
 import ewm.dto.StatsRequestDto;
 import ewm.dto.StatsResponseDto;
+import ewm.server.exception.IllegalDatesException;
 import ewm.server.repo.StatsRepo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,7 @@ public class StatsServiceImpl implements StatsService {
 
     @Override
     public List<StatsResponseDto> getStats(String start, String end, List<String> uris, Boolean unique) {
+        validateDates(start, end);
         if (Boolean.TRUE.equals(unique)) {
             return statsRepo.getStatsForDatesAndUrisWithUniqueIp(parseDateTime(start), parseDateTime(end), uris);
         } else {
@@ -42,5 +44,11 @@ public class StatsServiceImpl implements StatsService {
 
     private LocalDateTime parseDateTime(String dateTime) {
         return LocalDateTime.parse(dateTime, REQUEST_TIME_FORMAT);
+    }
+
+    private void validateDates(String start, String end) {
+        if(parseDateTime(start).isAfter(parseDateTime(end))) {
+            throw new IllegalDatesException("Illegal dates");
+        }
     }
 }
