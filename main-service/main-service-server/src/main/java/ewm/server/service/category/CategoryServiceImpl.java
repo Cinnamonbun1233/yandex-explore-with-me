@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,11 +24,13 @@ public class CategoryServiceImpl implements CategoryService {
         this.categoryRepo = categoryRepo;
     }
 
+    @Transactional
     @Override
     public CategoryDto addCategory(NewCategoryDto category) {
         return CategoryMapper.mapModelToDto(categoryRepo.save(CategoryMapper.mapDtoToModel(category)));
     }
 
+    @Transactional
     @Override
     public CategoryDto updateCategory(Long catId, CategoryDto inputCategory) {
         Category toBeUpdated = categoryRepo.findById(catId).orElseThrow(() -> {
@@ -37,6 +40,7 @@ public class CategoryServiceImpl implements CategoryService {
         return CategoryMapper.mapModelToDto(categoryRepo.save(toBeUpdated));
     }
 
+    @Transactional
     @Override
     public void deleteCategory(Long catId) {
         checkIfCategoryExists(catId);

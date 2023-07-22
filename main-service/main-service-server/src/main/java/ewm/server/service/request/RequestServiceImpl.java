@@ -17,6 +17,7 @@ import ewm.server.repo.request.RequestRepo;
 import ewm.server.repo.user.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,6 +31,7 @@ public class RequestServiceImpl implements RequestService {
     private final UserRepo userRepo;
     private final EventRepo eventRepo;
 
+    @Transactional
     @Override
     public ParticipationRequestDto addRequest(Long userId, Long eventId) {
         checkIfRequestWasAlreadyCreated(userId, eventId);
@@ -80,6 +82,7 @@ public class RequestServiceImpl implements RequestService {
         }
     }
 
+    @Transactional
     @Override
     public ParticipationRequestDto cancelOwnRequest(Long userId, Long requestId) {
         checkIfUserExists(userId);

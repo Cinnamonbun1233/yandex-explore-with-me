@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
@@ -27,6 +28,7 @@ public class CompilationServiceImpl implements CompilationService {
     private final EventRepo eventRepo;
     private final StatsClient statsClient;
 
+    @Transactional
     @Override
     public CompilationDto addCompilation(NewCompilationDto newCompilationDto) {
         Compilation toBeAdded = CompilationMapper.mapDtoToModel(newCompilationDto);
@@ -39,6 +41,7 @@ public class CompilationServiceImpl implements CompilationService {
         return CompilationMapper.mapModelToDto(compilationRepo.save(toBeAdded), statsClient);
     }
 
+    @Transactional
     @Override
     public CompilationDto updateCompilation(Long compId, UpdateCompilationRequest request) {
         Compilation toBeUpdated = compilationRepo.findById(compId).orElseThrow(() -> {
@@ -71,6 +74,7 @@ public class CompilationServiceImpl implements CompilationService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     @Override
     public void deleteCompilation(Long compId) {
         compilationRepo.deleteById(compId);

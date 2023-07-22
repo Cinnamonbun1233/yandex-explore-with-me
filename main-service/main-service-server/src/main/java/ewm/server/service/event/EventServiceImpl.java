@@ -36,6 +36,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -57,6 +58,7 @@ public class EventServiceImpl implements EventService {
     private final RequestRepo requestRepo;
     private final StatsClient statsClient;
 
+    @Transactional
     @Override
     public EventFullDto addEvent(Long userId, NewEventDto newEventDto) {
         Event newEvent = EventMapper.mapDtoToModel(newEventDto);
@@ -70,6 +72,7 @@ public class EventServiceImpl implements EventService {
         return EventMapper.mapModelToFullDto(savedEvent, getViewsFromStats(savedEvent.getId()));
     }
 
+    @Transactional
     @Override
     public EventFullDto updateEventAdmin(Long eventId, UpdateEventRequest updateRequest) {
         Event toBeUpdated = getEvent(eventId);
@@ -79,6 +82,7 @@ public class EventServiceImpl implements EventService {
         return EventMapper.mapModelToFullDto(savedEvent, getViewsFromStats(savedEvent.getId()));
     }
 
+    @Transactional
     @Override
     public EventFullDto updateEventPrivate(Long userId, Long eventId, UpdateEventRequest updateRequest) {
         checkIfUserExists(userId);
@@ -172,6 +176,7 @@ public class EventServiceImpl implements EventService {
         return EventMapper.mapModelToFullDto(eventFound, getViewsFromStats(eventFound.getId()));
     }
 
+    @Transactional
     @Override
     public EventRequestStatusUpdateResult updateRequestByInitiator(Long userId, Long eventId,
                                                                    EventRequestStatusUpdateRequest request) {
