@@ -47,7 +47,7 @@ public class StatsServiceImpl implements StatsService {
     }
 
     private void validateDates(String start, String end) {
-        if(parseDateTime(start).isAfter(parseDateTime(end))) {
+        if (parseDateTime(start).isAfter(parseDateTime(end))) {
             throw new IllegalDatesException("Illegal dates");
         }
     }
