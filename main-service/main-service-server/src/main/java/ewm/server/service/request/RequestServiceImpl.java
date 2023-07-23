@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -46,40 +47,13 @@ public class RequestServiceImpl implements RequestService {
             throw new UserNotFoundException("User does not exist");
         }));
         newRequest.setEvent(eventFound);
-        if(eventFound.getParticipationLimit() == 0 || eventFound.getRequestModeration() == false) {
+        if (eventFound.getParticipationLimit() == 0 || !eventFound.getRequestModeration()) {
             newRequest.setRequestStatus(RequestStatus.CONFIRMED);
         } else {
             newRequest.setRequestStatus(RequestStatus.PENDING);
         }
         newRequest.setCreated(LocalDateTime.now());
         return RequestMapper.mapModelToDto(requestRepo.save(newRequest));
-    }
-
-    private void checkIfParticipantLimitIsFull(Event eventFound) {
-        if(eventFound.getParticipationLimit() != 0) {
-            if (eventFound.getParticipationLimit() == eventFound.getRequests().stream()
-                    .filter(r -> r.getRequestStatus().equals(RequestStatus.CONFIRMED)).count()) {
-                throw new IllegalRequestException("Participant limit has been reached");
-            }
-        }
-    }
-
-    private void checkIfEventIsPublished(Event event) {
-        if(!event.getEventStatus().equals(EventStatus.PUBLISHED)) {
-            throw new IllegalRequestException("Event has not been published yet");
-        }
-    }
-
-    private void checkIfInitiatorIsCreatingRequest(Long userId, Long eventId) {
-        if(eventRepo.findById(eventId).orElseThrow().getInitiator().getId() == userId) {
-            throw new IllegalRequestException("Initiator may not create request to participate in his own event");
-        }
-    }
-
-    private void checkIfRequestWasAlreadyCreated(Long userId, Long eventId) {
-        if(requestRepo.findByRequester_IdAndEvent_Id(userId, eventId).isPresent()) {
-            throw new IllegalRequestException("Request was already created");
-        }
     }
 
     @Transactional
@@ -106,5 +80,33 @@ public class RequestServiceImpl implements RequestService {
         userRepo.findById(userId).orElseThrow(() -> {
             throw new UserNotFoundException("User does not exist");
         });
+    }
+
+
+    private void checkIfParticipantLimitIsFull(Event eventFound) {
+        if (eventFound.getParticipationLimit() != 0) {
+            if (eventFound.getParticipationLimit() == eventFound.getRequests().stream()
+                    .filter(r -> r.getRequestStatus().equals(RequestStatus.CONFIRMED)).count()) {
+                throw new IllegalRequestException("Participant limit has been reached");
+            }
+        }
+    }
+
+    private void checkIfEventIsPublished(Event event) {
+        if (!event.getEventStatus().equals(EventStatus.PUBLISHED)) {
+            throw new IllegalRequestException("Event has not been published yet");
+        }
+    }
+
+    private void checkIfInitiatorIsCreatingRequest(Long userId, Long eventId) {
+        if (Objects.equals(eventRepo.findById(eventId).orElseThrow().getInitiator().getId(), userId)) {
+            throw new IllegalRequestException("Initiator may not create request to participate in his own event");
+        }
+    }
+
+    private void checkIfRequestWasAlreadyCreated(Long userId, Long eventId) {
+        if (requestRepo.findByRequester_IdAndEvent_Id(userId, eventId).isPresent()) {
+            throw new IllegalRequestException("Request was already created");
+        }
     }
 }

@@ -12,5 +12,6 @@ import java.util.Optional;
 @Repository
 public interface RequestRepo extends JpaRepository<ParticipationRequest, Long>, QuerydslPredicateExecutor<ParticipationRequest> {
     List<ParticipationRequest> findAllByRequestStatusAndEvent_Id(RequestStatus requestStatus, Long eventId);
+
     Optional<ParticipationRequest> findByRequester_IdAndEvent_Id(Long requesterId, Long eventId);
 }

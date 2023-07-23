@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface CompilationRepo extends JpaRepository<Compilation, Long> {
-    List<Compilation> findAllByPinned (Boolean pinned);
+    List<Compilation> findAllByPinned(Boolean pinned);
 }

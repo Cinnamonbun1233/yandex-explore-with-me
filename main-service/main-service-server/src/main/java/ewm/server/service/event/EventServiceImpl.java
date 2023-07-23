@@ -146,7 +146,7 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> {
                     throw new EventNotFoundException("Event not found");
                 });
-        return EventMapper.mapModelToFullDto(eventFound,statsClient);
+        return EventMapper.mapModelToFullDto(eventFound, statsClient);
     }
 
     @Override
@@ -182,6 +182,15 @@ public class EventServiceImpl implements EventService {
                 .build();
     }
 
+    @Override
+    public List<ParticipationRequestDto> getRequestsToUsersEvent(Long userId, Long eventId) {
+        checkIfUserExists(userId);
+        Event eventFound = eventRepo.findById(eventId).orElseThrow(() -> {
+            throw new EventNotFoundException("Event does not exist");
+        });
+        return eventFound.getRequests().stream().map(RequestMapper::mapModelToDto).collect(Collectors.toList());
+    }
+
     private void rejectPendingRequestsIfParticipantLimitIsReached(List<ParticipationRequest> updatedRequests) {
         updatedRequests.stream()
                 .filter(r -> r.getEvent().getParticipationLimit() != 0 &&
@@ -194,7 +203,7 @@ public class EventServiceImpl implements EventService {
     }
 
     private void checkIfUpdateRequestIsValid(RequestStatus status, List<ParticipationRequest> toBeUpdated) {
-        if(toBeUpdated.stream().anyMatch(r -> !r.getRequestStatus().equals(RequestStatus.PENDING))) {
+        if (toBeUpdated.stream().anyMatch(r -> !r.getRequestStatus().equals(RequestStatus.PENDING))) {
             throw new IllegalRequestException("Status update is available for pending requests only");
         }
         if (status.equals(RequestStatus.CONFIRMED) && toBeUpdated.stream()
@@ -205,15 +214,6 @@ public class EventServiceImpl implements EventService {
         ) {
             throw new IllegalRequestException("Participant limit to one of events has been already reached");
         }
-    }
-
-    @Override
-    public List<ParticipationRequestDto> getRequestsToUsersEvent(Long userId, Long eventId) {
-        checkIfUserExists(userId);
-        Event eventFound = eventRepo.findById(eventId).orElseThrow(() -> {
-            throw new EventNotFoundException("Event does not exist");
-        });
-        return eventFound.getRequests().stream().map(RequestMapper::mapModelToDto).collect(Collectors.toList());
     }
 
     private void validateEventDate(LocalDateTime eventDate) {
