@@ -1,5 +1,6 @@
 package ewm.server.controller.event;
 
+import ewm.client.StatsClient;
 import ewm.server.dto.event.*;
 import ewm.server.dto.request.ParticipationRequestDto;
 import ewm.server.service.event.EventService;
@@ -18,10 +19,12 @@ public class EventController {
     private static final String EVENT_ADMIN_PATH = "/admin/events";
     private static final String EVENT_PUBLIC_PATH = "/events";
     private final EventService eventService;
+    private final StatsClient statsClient;
 
     @Autowired
-    public EventController(EventService eventService) {
+    public EventController(EventService eventService, StatsClient statsClient) {
         this.eventService = eventService;
+        this.statsClient = statsClient;
     }
 
     @PostMapping(value = EVENT_PRIVATE_PATH)

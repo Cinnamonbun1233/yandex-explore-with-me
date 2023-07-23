@@ -13,9 +13,9 @@ import java.util.List;
 
 @RestController
 public class CategoryController {
-    private final CategoryService categoryService;
     private static final String CAT_ADMIN_PATH = "/admin/categories";
     private static final String CAT_PUBLIC_PATH = "/categories";
+    private final CategoryService categoryService;
 
     @Autowired
     public CategoryController(CategoryService categoryService) {
