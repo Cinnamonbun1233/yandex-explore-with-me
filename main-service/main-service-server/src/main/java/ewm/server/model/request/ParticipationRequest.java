@@ -12,10 +12,10 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "requests")
 @Getter
 @Setter
 @ToString
+@Table(name = "requests")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ParticipationRequest {
     @Id

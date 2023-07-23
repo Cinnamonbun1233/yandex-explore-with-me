@@ -6,7 +6,7 @@ import ewm.server.dto.user.UserDto;
 import java.util.List;
 
 public interface UserService {
-    UserDto addUser(NewUserRequest user);
+    UserDto addUser(NewUserRequest newUserRequest);
 
     List<UserDto> getUsers(Long[] ids, Integer from, Integer size);
 

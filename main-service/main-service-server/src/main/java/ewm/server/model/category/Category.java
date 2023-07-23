@@ -9,11 +9,10 @@ import lombok.experimental.FieldDefaults;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "categories", schema = "public",
-        uniqueConstraints = @UniqueConstraint(columnNames = "name"))
 @Getter
 @Setter
 @ToString
+@Table(name = "categories", schema = "public", uniqueConstraints = @UniqueConstraint(columnNames = "name"))
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Category {
     @Id

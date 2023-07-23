@@ -22,8 +22,8 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<UserDto> addUser(@Valid @RequestBody NewUserRequest user) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.addUser(user));
+    public ResponseEntity<UserDto> addUser(@Valid @RequestBody NewUserRequest newUserRequest) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.addUser(newUserRequest));
     }
 
     @GetMapping
@@ -38,5 +38,4 @@ public class UserController {
         userService.deleteUserById(userId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
-
 }

@@ -38,55 +38,57 @@ public class RequestServiceImpl implements RequestService {
         checkIfRequestWasAlreadyCreated(userId, eventId);
         checkIfInitiatorIsCreatingRequest(userId, eventId);
         ParticipationRequest newRequest = new ParticipationRequest();
-        Event eventFound = eventRepo.findById(eventId).orElseThrow(() -> {
-            throw new EventNotFoundException(String.format("Event %d does not exist", eventId));
-        });
+        Event eventFound = eventRepo.findById(eventId).orElseThrow(
+                () -> new EventNotFoundException(String.format("Event %d does not exist", eventId)));
         checkIfEventIsPublished(eventFound);
         checkIfParticipantLimitIsFull(eventFound);
-        newRequest.setRequester(userRepo.findById(userId).orElseThrow(() -> {
-            throw new UserNotFoundException(String.format("User %d does not exist", userId));
-        }));
+        newRequest.setRequester(userRepo.findById(userId).orElseThrow(
+                () -> new UserNotFoundException(String.format("User %d does not exist", userId))));
         newRequest.setEvent(eventFound);
+
         if (eventFound.getParticipationLimit() == 0 || !eventFound.getRequestModeration()) {
             newRequest.setRequestStatus(RequestStatus.CONFIRMED);
         } else {
             newRequest.setRequestStatus(RequestStatus.PENDING);
         }
+
         newRequest.setCreated(LocalDateTime.now());
         return RequestMapper.mapModelToDto(requestRepo.save(newRequest));
+    }
+
+    @Override
+    public List<ParticipationRequestDto> getUsersRequests(Long userId) {
+        QParticipationRequest participationRequest = QParticipationRequest.participationRequest;
+        BooleanExpression byRequesterId = participationRequest.requester.userId.eq(userId);
+        return StreamSupport
+                .stream(requestRepo.findAll(byRequesterId).spliterator(), false)
+                .map(RequestMapper::mapModelToDto)
+                .collect(Collectors.toList());
     }
 
     @Transactional
     @Override
     public ParticipationRequestDto cancelOwnRequest(Long userId, Long requestId) {
         checkIfUserExists(userId);
-        ParticipationRequest toBeCanceled = requestRepo.findById(requestId).orElseThrow(() -> {
-            throw new RequestNotFoundException(String.format("Request %d does not exist", requestId));
-        });
+        ParticipationRequest toBeCanceled = requestRepo.findById(requestId).orElseThrow(
+                () -> new RequestNotFoundException(String.format("Request %d does not exist", requestId)));
         toBeCanceled.setRequestStatus(RequestStatus.CANCELED);
         return RequestMapper.mapModelToDto(requestRepo.save(toBeCanceled));
     }
 
-    @Override
-    public List<ParticipationRequestDto> getUsersRequests(Long userId) {
-        QParticipationRequest qRequest = QParticipationRequest.participationRequest;
-        BooleanExpression byRequesterId = qRequest.requester.userId.eq(userId);
-        return StreamSupport.stream(requestRepo.findAll(byRequesterId).spliterator(), false)
-                .map(RequestMapper::mapModelToDto)
-                .collect(Collectors.toList());
-    }
-
     private void checkIfUserExists(Long userId) {
-        userRepo.findById(userId).orElseThrow(() -> {
-            throw new UserNotFoundException(String.format("User %d does not exist", userId));
-        });
+        userRepo.findById(userId).orElseThrow(
+                () -> new UserNotFoundException(String.format("User %d does not exist", userId)));
     }
 
 
     private void checkIfParticipantLimitIsFull(Event eventFound) {
         if (eventFound.getParticipationLimit() != 0) {
-            if (eventFound.getParticipationLimit() == eventFound.getRequests().stream()
-                    .filter(r -> r.getRequestStatus().equals(RequestStatus.CONFIRMED)).count()) {
+            if (eventFound.getParticipationLimit() == eventFound
+                    .getRequests()
+                    .stream()
+                    .filter(r -> r.getRequestStatus().equals(RequestStatus.CONFIRMED))
+                    .count()) {
                 throw new IllegalRequestException("Participant limit has been reached");
             }
         }

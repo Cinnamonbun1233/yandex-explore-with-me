@@ -9,10 +9,10 @@ import lombok.experimental.FieldDefaults;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "locations")
 @Getter
 @Setter
 @ToString
+@Table(name = "locations")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Location {
     @Id

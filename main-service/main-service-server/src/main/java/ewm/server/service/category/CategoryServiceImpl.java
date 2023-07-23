@@ -26,31 +26,17 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Transactional
     @Override
-    public CategoryDto addCategory(NewCategoryDto category) {
-        return CategoryMapper.mapModelToDto(categoryRepo.save(CategoryMapper.mapDtoToModel(category)));
-    }
-
-    @Transactional
-    @Override
-    public CategoryDto updateCategory(Long catId, CategoryDto inputCategory) {
-        Category toBeUpdated = categoryRepo.findById(catId).orElseThrow(() -> {
-            throw new CategoryNotFoundException(String.format("Category %d does not exist", catId));
-        });
-        toBeUpdated.setName(inputCategory.getName());
-        return CategoryMapper.mapModelToDto(categoryRepo.save(toBeUpdated));
-    }
-
-    @Transactional
-    @Override
-    public void deleteCategory(Long catId) {
-        checkIfCategoryExists(catId);
-        categoryRepo.deleteById(catId);
+    public CategoryDto addCategory(NewCategoryDto newCategoryDto) {
+        return CategoryMapper.mapModelToDto(categoryRepo.save(CategoryMapper.mapDtoToModel(newCategoryDto)));
     }
 
     @Override
     public List<CategoryDto> getAllCategories(int from, int size) {
-        Pageable request = PageRequest.of(from > 0 ? from / size : 0, size);
-        return categoryRepo.findAll(request).getContent().stream()
+        Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size);
+        return categoryRepo
+                .findAll(pageable)
+                .getContent()
+                .stream()
                 .map(CategoryMapper::mapModelToDto)
                 .collect(Collectors.toList());
     }
@@ -59,6 +45,22 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryDto getCategoryById(Long catId) {
         checkIfCategoryExists(catId);
         return CategoryMapper.mapModelToDto(categoryRepo.findById(catId).orElseThrow());
+    }
+
+    @Transactional
+    @Override
+    public CategoryDto updateCategory(Long catId, CategoryDto categoryDto) {
+        Category category = categoryRepo.findById(catId).orElseThrow(
+                () -> new CategoryNotFoundException(String.format("Category %d does not exist", catId)));
+        category.setName(categoryDto.getName());
+        return CategoryMapper.mapModelToDto(categoryRepo.save(category));
+    }
+
+    @Transactional
+    @Override
+    public void deleteCategory(Long catId) {
+        checkIfCategoryExists(catId);
+        categoryRepo.deleteById(catId);
     }
 
     private void checkIfCategoryExists(Long catId) {

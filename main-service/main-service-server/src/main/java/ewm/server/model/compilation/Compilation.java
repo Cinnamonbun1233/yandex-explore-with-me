@@ -11,10 +11,10 @@ import javax.persistence.*;
 import java.util.Set;
 
 @Entity
-@Table(name = "compilations")
 @Getter
 @Setter
 @ToString
+@Table(name = "compilations")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Compilation {
     @Id

@@ -24,13 +24,14 @@ public class CategoryController {
     }
 
     @PostMapping(value = CAT_ADMIN_GENERAL_PATH)
-    public ResponseEntity<CategoryDto> addCategory(@Valid @RequestBody NewCategoryDto category) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.addCategory(category));
+    public ResponseEntity<CategoryDto> addCategory(@Valid @RequestBody NewCategoryDto newCategoryDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.addCategory(newCategoryDto));
     }
 
     @PatchMapping(value = CAT_ADMIN_BY_ID_PATH)
-    public ResponseEntity<CategoryDto> updateCategory(@PathVariable("catId") Long catId, @Valid @RequestBody CategoryDto category) {
-        return ResponseEntity.ok().body(categoryService.updateCategory(catId, category));
+    public ResponseEntity<CategoryDto> updateCategory(@PathVariable("catId") Long catId,
+                                                      @Valid @RequestBody CategoryDto categoryDto) {
+        return ResponseEntity.ok().body(categoryService.updateCategory(catId, categoryDto));
     }
 
     @DeleteMapping(value = CAT_ADMIN_BY_ID_PATH)

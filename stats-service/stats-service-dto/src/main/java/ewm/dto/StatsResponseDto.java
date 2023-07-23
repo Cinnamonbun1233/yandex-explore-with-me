@@ -1,15 +1,13 @@
 package ewm.dto;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-@Data
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class StatsResponseDto {
     String app;
     String uri;

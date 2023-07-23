@@ -8,13 +8,14 @@ import java.time.format.DateTimeFormatter;
 public class RequestMapper {
     private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    public static ParticipationRequestDto mapModelToDto(ParticipationRequest request) {
-        return ParticipationRequestDto.builder()
-                .id(request.getRequestId())
-                .created(request.getCreated().format(DATE_TIME_FORMAT))
-                .requester(request.getRequester().getUserId())
-                .event(request.getEvent().getEventId())
-                .status(request.getRequestStatus().toString())
+    public static ParticipationRequestDto mapModelToDto(ParticipationRequest participationRequest) {
+        return ParticipationRequestDto
+                .builder()
+                .id(participationRequest.getRequestId())
+                .created(participationRequest.getCreated().format(DATE_TIME_FORMAT))
+                .requester(participationRequest.getRequester().getUserId())
+                .event(participationRequest.getEvent().getEventId())
+                .status(participationRequest.getRequestStatus().toString())
                 .build();
     }
 }

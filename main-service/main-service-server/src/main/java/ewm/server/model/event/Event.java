@@ -18,10 +18,10 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
-@Table(name = "events")
 @Getter
 @Setter
 @ToString
+@Table(name = "events")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Event {
     @Id

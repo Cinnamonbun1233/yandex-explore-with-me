@@ -74,33 +74,39 @@ public class EventServiceImpl implements EventService {
 
     @Transactional
     @Override
-    public EventFullDto updateEventAdmin(Long eventId, UpdateEventRequest updateRequest) {
+    public EventFullDto updateEventAdmin(Long eventId, UpdateEventRequest updateEventRequest) {
         Event toBeUpdated = getEvent(eventId);
-        updateEvent(toBeUpdated, updateRequest);
-        updateStatusAdmin(toBeUpdated, updateRequest);
+        updateEvent(toBeUpdated, updateEventRequest);
+        updateStatusAdmin(toBeUpdated, updateEventRequest);
         Event savedEvent = eventRepo.save(toBeUpdated);
         return EventMapper.mapModelToFullDto(savedEvent, statsClient);
     }
 
     @Transactional
     @Override
-    public EventFullDto updateEventPrivate(Long userId, Long eventId, UpdateEventRequest updateRequest) {
+    public EventFullDto updateEventPrivate(Long userId, Long eventId, UpdateEventRequest updateEventRequest) {
         checkIfUserExists(userId);
         Event toBeUpdated = getEvent(eventId);
         checkIfEventAlreadyPublished(toBeUpdated);
-        updateEvent(toBeUpdated, updateRequest);
-        updateStatusUser(toBeUpdated, updateRequest);
+        updateEvent(toBeUpdated, updateEventRequest);
+        updateStatusUser(toBeUpdated, updateEventRequest);
         Event savedEvent = eventRepo.save(toBeUpdated);
         return EventMapper.mapModelToFullDto(savedEvent, statsClient);
     }
 
     @Override
-    public List<EventFullDto> searchEventsAdmin(Optional<Integer[]> users, Optional<String[]> states,
-                                                Optional<Integer[]> categories, Optional<String> rangeStart,
-                                                Optional<String> rangeEnd, int from, int size) {
+    public List<EventFullDto> searchEventsAdmin(Optional<Integer[]> users,
+                                                Optional<String[]> states,
+                                                Optional<Integer[]> categories,
+                                                Optional<String> rangeStart,
+                                                Optional<String> rangeEnd,
+                                                int from,
+                                                int size) {
         Pageable request = makePageRequest(from, size);
         BooleanExpression searchExp = makeSearchExpAdmin(users, states, categories, rangeStart, rangeEnd);
-        return eventRepo.findAll(searchExp, request).stream()
+        return eventRepo
+                .findAll(searchExp, request)
+                .stream()
                 .sorted(Comparator.comparing(Event::getEventDate))
                 .map(e -> EventMapper.mapModelToFullDto(e, statsClient))
                 .collect(Collectors.toList());
@@ -110,30 +116,42 @@ public class EventServiceImpl implements EventService {
     public List<EventShortDto> getAllUsersEvents(Long userId, int from, int size) {
         Pageable request = makePageRequest(from, size);
         BooleanExpression byUserId = QEvent.event.initiator.userId.eq(userId);
-        return eventRepo.findAll(byUserId, request).stream()
+        return eventRepo
+                .findAll(byUserId, request)
+                .stream()
                 .sorted(Comparator.comparing(Event::getEventDate))
                 .map(e -> EventMapper.mapModelToShortDto(e, statsClient))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<EventShortDto> searchEventsPublic(Optional<String> text, Optional<Integer[]> categories,
-                                                  Optional<Boolean> paid, Optional<String> rangeStart,
-                                                  Optional<String> rangeEnd, Boolean onlyAvailable,
-                                                  String sort, int from, int size) {
+    public List<EventShortDto> searchEventsPublic(Optional<String> text,
+                                                  Optional<Integer[]> categories,
+                                                  Optional<Boolean> paid,
+                                                  Optional<String> rangeStart,
+                                                  Optional<String> rangeEnd,
+                                                  Boolean onlyAvailable,
+                                                  String sort,
+                                                  int from,
+                                                  int size) {
         Pageable request = makePageRequest(from, size);
         BooleanExpression searchExp = makeSearchExpPublic(text, categories, paid, rangeStart, rangeEnd);
         Comparator<EventShortDto> comparator = makeComparator(sort);
+
         if (onlyAvailable) {
-            return eventRepo.findAll(searchExp, request).stream()
-                    .filter(e -> e.getRequests().stream()
+            return eventRepo.findAll(searchExp, request)
+                    .stream()
+                    .filter(e -> e.getRequests()
+                                         .stream()
                                          .filter(r -> r.getRequestStatus().equals(RequestStatus.CONFIRMED))
                                          .count() < e.getParticipationLimit())
                     .map(e -> EventMapper.mapModelToShortDto(e, statsClient))
                     .sorted(comparator)
                     .collect(Collectors.toList());
         } else {
-            return eventRepo.findAll(searchExp, request).stream()
+            return eventRepo
+                    .findAll(searchExp, request)
+                    .stream()
                     .map(e -> EventMapper.mapModelToShortDto(e, statsClient))
                     .sorted(comparator)
                     .collect(Collectors.toList());
@@ -142,35 +160,34 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventFullDto getEventByIdPublic(Long id) {
-        Event eventFound = eventRepo.findByEventIdAndEventStatus(id, EventStatus.PUBLISHED)
-                .orElseThrow(() -> {
-                    throw new EventNotFoundException(String.format("Event %d not found", id));
-                });
+        Event eventFound = eventRepo.findByEventIdAndEventStatus(id, EventStatus.PUBLISHED).orElseThrow(
+                () -> new EventNotFoundException(String.format("Event %d not found", id)));
         return EventMapper.mapModelToFullDto(eventFound, statsClient);
     }
 
     @Override
     public EventFullDto getEventByIdPrivate(Long userId, Long eventId) {
         checkIfUserExists(userId);
-        Event eventFound = eventRepo.findById(eventId)
-                .orElseThrow(() -> {
-                    throw new EventNotFoundException(String.format("Event %d not found", eventId));
-                });
+        Event eventFound = eventRepo.findById(eventId).orElseThrow(
+                () -> new EventNotFoundException(String.format("Event %d not found", eventId)));
         return EventMapper.mapModelToFullDto(eventFound, statsClient);
     }
 
     @Transactional
     @Override
-    public EventRequestStatusUpdateResult updateRequestByInitiator(Long userId, Long eventId,
-                                                                   EventRequestStatusUpdateRequest request) {
+    public EventRequestStatusUpdateResult updateRequestByInitiator(Long userId,
+                                                                   Long eventId,
+                                                                   EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest) {
         checkIfUserExists(userId);
-        RequestStatus status = parseRequestStatus(request.getStatus());
-        List<ParticipationRequest> toBeUpdated = makeListOfRequestsToBeUpdated(eventId, request);
+        RequestStatus status = parseRequestStatus(eventRequestStatusUpdateRequest.getStatus());
+        List<ParticipationRequest> toBeUpdated = makeListOfRequestsToBeUpdated(eventId, eventRequestStatusUpdateRequest);
         checkIfUpdateRequestIsValid(status, toBeUpdated);
         toBeUpdated.forEach(r -> r.setRequestStatus(status));
         List<ParticipationRequest> updatedRequests = requestRepo.saveAllAndFlush(toBeUpdated);
         rejectPendingRequestsIfParticipantLimitIsReached(updatedRequests);
-        return EventRequestStatusUpdateResult.builder()
+
+        return EventRequestStatusUpdateResult
+                .builder()
                 .confirmedRequests(requestRepo.findAllByRequestStatusAndEvent_EventId(RequestStatus.CONFIRMED, eventId)
                         .stream()
                         .map(RequestMapper::mapModelToDto)
@@ -185,14 +202,18 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<ParticipationRequestDto> getRequestsToUsersEvent(Long userId, Long eventId) {
         checkIfUserExists(userId);
-        Event eventFound = eventRepo.findById(eventId).orElseThrow(() -> {
-            throw new EventNotFoundException(String.format("Event %d not found", eventId));
-        });
-        return eventFound.getRequests().stream().map(RequestMapper::mapModelToDto).collect(Collectors.toList());
+        Event eventFound = eventRepo.findById(eventId).orElseThrow(
+                () -> new EventNotFoundException(String.format("Event %d not found", eventId)));
+        return eventFound
+                .getRequests()
+                .stream()
+                .map(RequestMapper::mapModelToDto)
+                .collect(Collectors.toList());
     }
 
     private void rejectPendingRequestsIfParticipantLimitIsReached(List<ParticipationRequest> updatedRequests) {
-        updatedRequests.stream()
+        updatedRequests
+                .stream()
                 .filter(r -> r.getEvent().getParticipationLimit() != 0 &&
                              r.getEvent().getParticipationLimit() == r.getEvent().getRequests().stream()
                                      .filter(r1 -> r1.getRequestStatus().equals(RequestStatus.CONFIRMED))
@@ -203,12 +224,16 @@ public class EventServiceImpl implements EventService {
     }
 
     private void checkIfUpdateRequestIsValid(RequestStatus status, List<ParticipationRequest> toBeUpdated) {
+
         if (toBeUpdated.stream().anyMatch(r -> !r.getRequestStatus().equals(RequestStatus.PENDING))) {
             throw new IllegalRequestException("Status update is available for pending requests only");
         }
+
         if (status.equals(RequestStatus.CONFIRMED) && toBeUpdated.stream()
                 .anyMatch(r -> r.getEvent().getParticipationLimit() != 0 &&
-                               r.getEvent().getParticipationLimit() == r.getEvent().getRequests().stream()
+                               r.getEvent().getParticipationLimit() == r.getEvent()
+                                       .getRequests()
+                                       .stream()
                                        .filter(r1 -> r1.getRequestStatus().equals(RequestStatus.CONFIRMED))
                                        .count())
         ) {
@@ -227,7 +252,8 @@ public class EventServiceImpl implements EventService {
         QParticipationRequest qRequest = QParticipationRequest.participationRequest;
         BooleanExpression exp = qRequest.event.eventId.eq(eventId)
                 .and(qRequest.requestId.in(request.getRequestIds()));
-        return StreamSupport.stream(requestRepo.findAll(exp).spliterator(), false)
+        return StreamSupport
+                .stream(requestRepo.findAll(exp).spliterator(), false)
                 .collect(Collectors.toList());
     }
 
@@ -248,7 +274,11 @@ public class EventServiceImpl implements EventService {
     }
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    private BooleanExpression makeSearchExpAdmin(Optional<Integer[]> users, Optional<String[]> states, Optional<Integer[]> categories, Optional<String> rangeStart, Optional<String> rangeEnd) {
+    private BooleanExpression makeSearchExpAdmin(Optional<Integer[]> users,
+                                                 Optional<String[]> states,
+                                                 Optional<Integer[]> categories,
+                                                 Optional<String> rangeStart,
+                                                 Optional<String> rangeEnd) {
         QEvent qEvent = QEvent.event;
         BooleanBuilder builder = new BooleanBuilder();
         users.ifPresent(userIds -> builder.and(qEvent.initiator.userId.in(userIds)));
@@ -262,7 +292,11 @@ public class EventServiceImpl implements EventService {
     }
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    private BooleanExpression makeSearchExpPublic(Optional<String> text, Optional<Integer[]> categories, Optional<Boolean> paid, Optional<String> rangeStart, Optional<String> rangeEnd) {
+    private BooleanExpression makeSearchExpPublic(Optional<String> text,
+                                                  Optional<Integer[]> categories,
+                                                  Optional<Boolean> paid,
+                                                  Optional<String> rangeStart,
+                                                  Optional<String> rangeEnd) {
         QEvent qEvent = QEvent.event;
         BooleanBuilder builder = new BooleanBuilder();
         builder.and(qEvent.eventStatus.eq(EventStatus.PUBLISHED));
@@ -272,14 +306,18 @@ public class EventServiceImpl implements EventService {
             builder.and(annotationContainsText.or(descriptionContainsText));
         });
         categories.ifPresent(categoryIds -> builder.and(qEvent.category.categoryId.in(categoryIds)));
+
         if (rangeStart.isPresent() && rangeEnd.isPresent()) {
             validateSearchDates(rangeStart.get(), rangeEnd.get());
         }
+
         rangeStart.ifPresent(start -> builder.and(qEvent.eventDate.after(parseDateTime(start))));
         rangeEnd.ifPresent(end -> builder.and(qEvent.eventDate.before(parseDateTime(end))));
+
         if (rangeStart.isEmpty() || rangeEnd.isEmpty()) {
             builder.and(qEvent.eventDate.after(LocalDateTime.now()));
         }
+
         paid.ifPresent(bool -> builder.and(qEvent.paid.eq(bool)));
         return Expressions.asBoolean(builder.getValue());
     }
@@ -295,21 +333,18 @@ public class EventServiceImpl implements EventService {
     }
 
     private Category getCategory(Integer categoryId) {
-        return categoryRepo.findById(categoryId.longValue()).orElseThrow(() -> {
-            throw new CategoryNotFoundException(String.format("Category %d does not exist", categoryId));
-        });
+        return categoryRepo.findById(categoryId.longValue()).orElseThrow(
+                () -> new CategoryNotFoundException(String.format("Category %d does not exist", categoryId)));
     }
 
     private User getInitiator(Long userId) {
-        return userRepo.findById(userId).orElseThrow(() -> {
-            throw new UserNotFoundException(String.format("User %d does not exist", userId));
-        });
+        return userRepo.findById(userId).orElseThrow(
+                () -> new UserNotFoundException(String.format("User %d does not exist", userId)));
     }
 
     private Event getEvent(Long eventId) {
-        return eventRepo.findById(eventId).orElseThrow(() -> {
-            throw new EventNotFoundException(String.format("Event %d does not exist", eventId));
-        });
+        return eventRepo.findById(eventId).orElseThrow(
+                () -> new EventNotFoundException(String.format("Event %d does not exist", eventId)));
     }
 
     private void checkIfUserExists(Long userId) {
@@ -318,20 +353,20 @@ public class EventServiceImpl implements EventService {
         }
     }
 
-    private void updateEvent(Event toBeUpdated, UpdateEventRequest updateRequest) {
-        updateDescription(toBeUpdated, updateRequest);
-        updateAnnotation(toBeUpdated, updateRequest);
-        updateParticipantLimit(toBeUpdated, updateRequest);
-        updateTitle(toBeUpdated, updateRequest);
-        updatePaid(toBeUpdated, updateRequest);
-        updateCategory(toBeUpdated, updateRequest);
-        updateEventDate(toBeUpdated, updateRequest);
-        updateLocation(toBeUpdated, updateRequest);
+    private void updateEvent(Event toBeUpdated, UpdateEventRequest updateEventRequest) {
+        updateDescription(toBeUpdated, updateEventRequest);
+        updateAnnotation(toBeUpdated, updateEventRequest);
+        updateParticipantLimit(toBeUpdated, updateEventRequest);
+        updateTitle(toBeUpdated, updateEventRequest);
+        updatePaid(toBeUpdated, updateEventRequest);
+        updateCategory(toBeUpdated, updateEventRequest);
+        updateEventDate(toBeUpdated, updateEventRequest);
+        updateLocation(toBeUpdated, updateEventRequest);
     }
 
-    private void updateStatusAdmin(Event toBeUpdated, UpdateEventRequest updateRequest) {
-        if (updateRequest.getStateAction() != null) {
-            StateAdminAction action = parseActionAdmin(updateRequest.getStateAction());
+    private void updateStatusAdmin(Event toBeUpdated, UpdateEventRequest updateEventRequest) {
+        if (updateEventRequest.getStateAction() != null) {
+            StateAdminAction action = parseActionAdmin(updateEventRequest.getStateAction());
             switch (action) {
                 case PUBLISH_EVENT:
                     checkIfEventAlreadyPublished(toBeUpdated);
@@ -358,9 +393,9 @@ public class EventServiceImpl implements EventService {
         }
     }
 
-    private void updateStatusUser(Event toBeUpdated, UpdateEventRequest updateRequest) {
-        if (updateRequest.getStateAction() != null) {
-            StateUserAction action = parseActionUser(updateRequest.getStateAction());
+    private void updateStatusUser(Event toBeUpdated, UpdateEventRequest updateEventRequest) {
+        if (updateEventRequest.getStateAction() != null) {
+            StateUserAction action = parseActionUser(updateEventRequest.getStateAction());
             switch (action) {
                 case CANCEL_REVIEW:
                     checkIfEventAlreadyPublished(toBeUpdated);
@@ -389,59 +424,59 @@ public class EventServiceImpl implements EventService {
         }
     }
 
-    private void updateLocation(Event toBeUpdated, UpdateEventRequest updateRequest) {
-        if (updateRequest.getLocation() != null) {
-            if (!(updateRequest.getLocation().getLat().equals(toBeUpdated.getLocation().getLat()) &&
-                  updateRequest.getLocation().getLon().equals(toBeUpdated.getLocation().getLon()))) {
-                toBeUpdated.setLocation(saveLocation(updateRequest.getLocation()));
+    private void updateLocation(Event toBeUpdated, UpdateEventRequest updateEventRequest) {
+        if (updateEventRequest.getLocation() != null) {
+            if (!(updateEventRequest.getLocation().getLat().equals(toBeUpdated.getLocation().getLat()) &&
+                  updateEventRequest.getLocation().getLon().equals(toBeUpdated.getLocation().getLon()))) {
+                toBeUpdated.setLocation(saveLocation(updateEventRequest.getLocation()));
             }
         }
     }
 
-    private void updateEventDate(Event toBeUpdated, UpdateEventRequest updateRequest) {
-        if (updateRequest.getEventDate() != null) {
-            LocalDateTime newDateTime = LocalDateTime.parse(updateRequest.getEventDate(),
+    private void updateEventDate(Event toBeUpdated, UpdateEventRequest updateEventRequest) {
+        if (updateEventRequest.getEventDate() != null) {
+            LocalDateTime newDateTime = LocalDateTime.parse(updateEventRequest.getEventDate(),
                     DateTimeFormatter.ofPattern(dateTimePattern));
             validateEventDate(newDateTime);
             toBeUpdated.setEventDate(newDateTime);
         }
     }
 
-    private void updateCategory(Event toBeUpdated, UpdateEventRequest updateRequest) {
-        if (updateRequest.getCategory() != null) {
-            if (!(updateRequest.getCategory().longValue() == toBeUpdated.getCategory().getCategoryId())) {
-                toBeUpdated.setCategory(getCategory(updateRequest.getCategory()));
+    private void updateCategory(Event toBeUpdated, UpdateEventRequest updateEventRequest) {
+        if (updateEventRequest.getCategory() != null) {
+            if (!(updateEventRequest.getCategory().longValue() == toBeUpdated.getCategory().getCategoryId())) {
+                toBeUpdated.setCategory(getCategory(updateEventRequest.getCategory()));
             }
         }
     }
 
-    private void updatePaid(Event toBeUpdated, UpdateEventRequest updateRequest) {
-        if (updateRequest.getPaid() != null) {
-            toBeUpdated.setPaid(updateRequest.getPaid());
+    private void updatePaid(Event toBeUpdated, UpdateEventRequest updateEventRequest) {
+        if (updateEventRequest.getPaid() != null) {
+            toBeUpdated.setPaid(updateEventRequest.getPaid());
         }
     }
 
-    private void updateTitle(Event toBeUpdated, UpdateEventRequest updateRequest) {
-        if (updateRequest.getTitle() != null) {
-            toBeUpdated.setTitle(updateRequest.getTitle());
+    private void updateTitle(Event toBeUpdated, UpdateEventRequest updateEventRequest) {
+        if (updateEventRequest.getTitle() != null) {
+            toBeUpdated.setTitle(updateEventRequest.getTitle());
         }
     }
 
-    private void updateParticipantLimit(Event toBeUpdated, UpdateEventRequest updateRequest) {
-        if (updateRequest.getParticipantLimit() != null) {
-            toBeUpdated.setParticipationLimit(updateRequest.getParticipantLimit());
+    private void updateParticipantLimit(Event toBeUpdated, UpdateEventRequest updateEventRequest) {
+        if (updateEventRequest.getParticipantLimit() != null) {
+            toBeUpdated.setParticipationLimit(updateEventRequest.getParticipantLimit());
         }
     }
 
-    private void updateAnnotation(Event toBeUpdated, UpdateEventRequest updateRequest) {
-        if (updateRequest.getAnnotation() != null) {
-            toBeUpdated.setAnnotation(updateRequest.getAnnotation());
+    private void updateAnnotation(Event toBeUpdated, UpdateEventRequest updateEventRequest) {
+        if (updateEventRequest.getAnnotation() != null) {
+            toBeUpdated.setAnnotation(updateEventRequest.getAnnotation());
         }
     }
 
-    private void updateDescription(Event toBeUpdated, UpdateEventRequest updateRequest) {
-        if (updateRequest.getDescription() != null) {
-            toBeUpdated.setDescription(updateRequest.getDescription());
+    private void updateDescription(Event toBeUpdated, UpdateEventRequest updateEventRequest) {
+        if (updateEventRequest.getDescription() != null) {
+            toBeUpdated.setDescription(updateEventRequest.getDescription());
         }
     }
 

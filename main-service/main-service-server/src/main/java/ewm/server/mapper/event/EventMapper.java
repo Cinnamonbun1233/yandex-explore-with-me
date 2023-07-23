@@ -19,30 +19,38 @@ import java.util.function.Function;
 
 public class EventMapper {
     private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    private static final Function<List<ParticipationRequest>, Integer> CALCULATE_CONFIRMED_REQUEST_FUNC = list ->
-            list == null || list.isEmpty() ? 0 : (int) list.stream()
-                    .filter(r -> r.getRequestStatus().equals(RequestStatus.CONFIRMED)).count();
-    private static final BiFunction<Long, StatsClient, Integer> GET_VIEWS_OF_EVENT_FUNC = (id, statsClient) -> {
-        StatsResponseDto stats = statsClient.getStats("2000-01-01 00:00:00",
-                "2100-01-01 00:00:00",
-                new String[]{String.format("/events/%d", id)}, "true").blockFirst();
-        return stats == null ? 0 : stats.getHits().intValue();
-    };
+    private static final Function<List<ParticipationRequest>, Integer> CALCULATE_CONFIRMED_REQUEST_FUNC =
+            list -> list == null || list.isEmpty() ? 0 : (int) list
+                    .stream()
+                    .filter(r -> r.getRequestStatus().equals(RequestStatus.CONFIRMED))
+                    .count();
+    private static final BiFunction<Long, StatsClient, Integer> GET_VIEWS_OF_EVENT_FUNC =
+            (id, statsClient) -> {
+                StatsResponseDto statsResponseDto = statsClient
+                        .getStats(
+                                "2000-01-01 00:00:00",
+                                "2100-01-01 00:00:00",
+                                new String[]{String.format("/events/%d", id)},
+                                "true")
+                        .blockFirst();
+                return statsResponseDto == null ? 0 : statsResponseDto.getHits().intValue();
+            };
 
-    public static Event mapDtoToModel(NewEventDto dto) {
+    public static Event mapDtoToModel(NewEventDto newEventDto) {
         Event event = new Event();
-        event.setAnnotation(dto.getAnnotation());
-        event.setDescription(dto.getDescription());
-        event.setPaid(dto.getPaid() != null && dto.getPaid());
-        event.setEventDate(LocalDateTime.parse(dto.getEventDate(), DATE_TIME_FORMAT));
-        event.setParticipationLimit(dto.getParticipantLimit() == null ? 0 : dto.getParticipantLimit());
-        event.setRequestModeration(dto.getRequestModeration() == null || dto.getRequestModeration());
-        event.setTitle(dto.getTitle());
+        event.setAnnotation(newEventDto.getAnnotation());
+        event.setDescription(newEventDto.getDescription());
+        event.setPaid(newEventDto.getPaid() != null && newEventDto.getPaid());
+        event.setEventDate(LocalDateTime.parse(newEventDto.getEventDate(), DATE_TIME_FORMAT));
+        event.setParticipationLimit(newEventDto.getParticipantLimit() == null ? 0 : newEventDto.getParticipantLimit());
+        event.setRequestModeration(newEventDto.getRequestModeration() == null || newEventDto.getRequestModeration());
+        event.setTitle(newEventDto.getTitle());
         return event;
     }
 
     public static EventFullDto mapModelToFullDto(Event event, StatsClient statsClient) {
-        return EventFullDto.builder()
+        return EventFullDto
+                .builder()
                 .id(event.getEventId())
                 .annotation(event.getAnnotation())
                 .paid(event.getPaid())
@@ -63,7 +71,8 @@ public class EventMapper {
     }
 
     public static EventShortDto mapModelToShortDto(Event event, StatsClient statsClient) {
-        return EventShortDto.builder()
+        return EventShortDto
+                .builder()
                 .id(event.getEventId())
                 .annotation(event.getAnnotation())
                 .category(CategoryMapper.mapModelToDto(event.getCategory()))

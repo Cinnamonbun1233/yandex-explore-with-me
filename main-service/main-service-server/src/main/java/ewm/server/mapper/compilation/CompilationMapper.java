@@ -9,20 +9,23 @@ import ewm.server.model.compilation.Compilation;
 import java.util.stream.Collectors;
 
 public class CompilationMapper {
-    public static Compilation mapDtoToModel(NewCompilationDto dto) {
+    public static Compilation mapDtoToModel(NewCompilationDto newCompilationDto) {
         Compilation compilation = new Compilation();
-        compilation.setPinned(dto.getPinned() != null && dto.getPinned());
-        compilation.setTitle(dto.getTitle());
+        compilation.setPinned(newCompilationDto.getPinned() != null && newCompilationDto.getPinned());
+        compilation.setTitle(newCompilationDto.getTitle());
         return compilation;
     }
 
-    public static CompilationDto mapModelToDto(Compilation model, StatsClient client) {
-        return CompilationDto.builder()
-                .id(model.getCompilationId())
-                .title(model.getTitle())
-                .pinned(model.getPinned())
-                .events(model.getEvents().stream()
-                        .map(e -> EventMapper.mapModelToShortDto(e, client))
+    public static CompilationDto mapModelToDto(Compilation compilation, StatsClient statsClient) {
+        return CompilationDto
+                .builder()
+                .id(compilation.getCompilationId())
+                .title(compilation.getTitle())
+                .pinned(compilation.getPinned())
+                .events(compilation
+                        .getEvents()
+                        .stream()
+                        .map(e -> EventMapper.mapModelToShortDto(e, statsClient))
                         .collect(Collectors.toList()))
                 .build();
     }

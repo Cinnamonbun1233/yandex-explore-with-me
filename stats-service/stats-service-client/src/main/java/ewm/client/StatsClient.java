@@ -12,10 +12,10 @@ import java.util.Optional;
 @Service
 public class StatsClient {
     private static final String BASE_URL = "stats-server:9090";
-    private final WebClient client = WebClient.create();
+    private final WebClient webClient = WebClient.create();
 
     public Mono<Void> saveRecord(StatsRequestDto statsRequestDto) {
-        return client
+        return webClient
                 .post()
                 .uri(String.format("%s/hit", BASE_URL))
                 .bodyValue(statsRequestDto)
@@ -33,7 +33,8 @@ public class StatsClient {
 
     private Flux<StatsResponseDto> getStatsWithUri(String start, String end, String[] uris, String unique) {
         Optional<String> uniqueOpt = Optional.ofNullable(unique);
-        return client.get()
+        return webClient
+                .get()
                 .uri(uriBuilder -> uriBuilder
                         .path(String.format("%s/stats", BASE_URL))
                         .queryParam("start", start)
@@ -41,18 +42,21 @@ public class StatsClient {
                         .queryParam("uris", uris)
                         .queryParamIfPresent("unique", uniqueOpt)
                         .build())
-                .retrieve().bodyToFlux(StatsResponseDto.class);
+                .retrieve()
+                .bodyToFlux(StatsResponseDto.class);
     }
 
     private Flux<StatsResponseDto> getStatsWithoutUri(String start, String end, String unique) {
         Optional<String> uniqueOpt = Optional.ofNullable(unique);
-        return client.get()
+        return webClient
+                .get()
                 .uri(uriBuilder -> uriBuilder
                         .path(String.format("%s/stats", BASE_URL))
                         .queryParam("start", start)
                         .queryParam("end", end)
                         .queryParamIfPresent("unique", uniqueOpt)
                         .build())
-                .retrieve().bodyToFlux(StatsResponseDto.class);
+                .retrieve()
+                .bodyToFlux(StatsResponseDto.class);
     }
 }

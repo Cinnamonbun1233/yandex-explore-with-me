@@ -2,12 +2,13 @@ package ewm.server.dto.event;
 
 import ewm.server.dto.category.CategoryDto;
 import ewm.server.dto.user.UserShortDto;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class EventShortDto {

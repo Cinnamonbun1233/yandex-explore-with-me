@@ -10,7 +10,7 @@ import java.util.Optional;
 public interface CompilationService {
     CompilationDto addCompilation(NewCompilationDto newCompilationDto);
 
-    CompilationDto updateCompilation(Long compId, UpdateCompilationRequest request);
+    CompilationDto updateCompilation(Long compId, UpdateCompilationRequest updateCompilationRequest);
 
     CompilationDto getCompilationById(Long compId);
 

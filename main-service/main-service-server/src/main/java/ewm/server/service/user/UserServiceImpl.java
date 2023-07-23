@@ -25,14 +25,28 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public UserDto addUser(NewUserRequest user) {
-        return UserMapper.mapModelToDto(userRepo.save(UserMapper.mapDtoToModel(user)));
+    public UserDto addUser(NewUserRequest newUserRequest) {
+        return UserMapper.mapModelToDto(userRepo.save(UserMapper.mapDtoToModel(newUserRequest)));
+    }
+
+    private List<UserDto> getAllUsers(Pageable pageable) {
+        return userRepo
+                .findAll(pageable)
+                .getContent()
+                .stream()
+                .map(UserMapper::mapModelToDto)
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<UserDto> getUsers(Long[] ids, Integer from, Integer size) {
-        Pageable request = PageRequest.of(from > 0 ? from / size : 0, size);
-        return ids == null ? getAllUsers(request) : getUsersByIds(ids, request);
+        Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size);
+        return ids == null ? getAllUsers(pageable) : getUsersByIds(ids, pageable);
+    }
+
+    private List<UserDto> getUsersByIds(Long[] ids, Pageable pageable) {
+        return userRepo.findAllByUserIdIn(ids, pageable).getContent().stream()
+                .map(UserMapper::mapModelToDto).collect(Collectors.toList());
     }
 
     @Transactional
@@ -46,15 +60,5 @@ public class UserServiceImpl implements UserService {
         if (userRepo.findById(userId).isEmpty()) {
             throw new UserNotFoundException(String.format("User %d not found", userId));
         }
-    }
-
-    private List<UserDto> getUsersByIds(Long[] ids, Pageable request) {
-        return userRepo.findAllByUserIdIn(ids, request).getContent().stream()
-                .map(UserMapper::mapModelToDto).collect(Collectors.toList());
-    }
-
-    private List<UserDto> getAllUsers(Pageable request) {
-        return userRepo.findAll(request).getContent().stream()
-                .map(UserMapper::mapModelToDto).collect(Collectors.toList());
     }
 }
