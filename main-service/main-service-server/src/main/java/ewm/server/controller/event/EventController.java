@@ -1,15 +1,19 @@
 package ewm.server.controller.event;
 
 import ewm.client.StatsClient;
+import ewm.dto.StatsRequestDto;
 import ewm.server.dto.event.*;
 import ewm.server.dto.request.ParticipationRequestDto;
 import ewm.server.service.event.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,6 +24,8 @@ public class EventController {
     private static final String EVENT_PUBLIC_PATH = "/events";
     private final EventService eventService;
     private final StatsClient statsClient;
+    @Value("${date-time.format}")
+    private String dateTimePattern;
 
     @Autowired
     public EventController(EventService eventService, StatsClient statsClient) {
@@ -74,12 +80,22 @@ public class EventController {
                                                                   @RequestParam(name = "sort", required = false, defaultValue = "EVENT_DATE") String sort,
                                                                   @RequestParam(name = "from", required = false, defaultValue = "0") int from,
                                                                   @RequestParam(name = "size", required = false, defaultValue = "10") int size) {
+        statsClient.saveRecord(StatsRequestDto.builder()
+                .uri("/events")
+                .app("ewm-main-service")
+                .timestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern(dateTimePattern)))
+                .build()).block();
         return ResponseEntity.ok().body(eventService.searchEventsPublic(text, categories, paid, rangeStart, rangeEnd,
                 onlyAvailable, sort, from, size));
     }
 
     @GetMapping(EVENT_PUBLIC_PATH + "/{id}")
     public ResponseEntity<EventFullDto> getEventByIdPublic(@PathVariable("id") Long id) {
+        statsClient.saveRecord(StatsRequestDto.builder()
+                .uri(String.format("/events/%d", id))
+                .app("ewm-main-service")
+                .timestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern(dateTimePattern)))
+                .build()).block();
         return ResponseEntity.ok().body(eventService.getEventByIdPublic(id));
     }
 

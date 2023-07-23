@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.function.Function;
 
 public class EventMapper {
-    private static final DateTimeFormatter REQUEST_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final Function<List<ParticipationRequest>, Integer> calculateConfirmedRequestFunc = list -> {
         if(list == null || list.isEmpty()) {
             return 0;
@@ -27,7 +27,7 @@ public class EventMapper {
         if(time == null) {
             return "";
         } else {
-            return time.format(REQUEST_TIME_FORMAT);
+            return time.format(DATE_TIME_FORMAT);
         }
     };
 
@@ -36,7 +36,7 @@ public class EventMapper {
         event.setAnnotation(dto.getAnnotation());
         event.setDescription(dto.getDescription());
         event.setPaid(dto.getPaid() == null ? false : dto.getPaid());
-        event.setEventDate(LocalDateTime.parse(dto.getEventDate(), REQUEST_TIME_FORMAT));
+        event.setEventDate(LocalDateTime.parse(dto.getEventDate(), DATE_TIME_FORMAT));
         event.setParticipationLimit(dto.getParticipantLimit() == null ? 0 : dto.getParticipantLimit());
         event.setRequestModeration(dto.getRequestModeration() == null ? true : dto.getRequestModeration());
         event.setTitle(dto.getTitle());
@@ -50,9 +50,9 @@ public class EventMapper {
                 .paid(event.getPaid())
                 .category(CategoryMapper.mapModelToDto(event.getCategory()))
                 .confirmedRequests(calculateConfirmedRequestFunc.apply(event.getRequests()))
-                .createdOn(event.getCreatedOn().format(REQUEST_TIME_FORMAT))
+                .createdOn(event.getCreatedOn().format(DATE_TIME_FORMAT))
                 .description(event.getDescription())
-                .eventDate(event.getEventDate().format(REQUEST_TIME_FORMAT))
+                .eventDate(event.getEventDate().format(DATE_TIME_FORMAT))
                 .state(event.getEventStatus())
                 .title(event.getTitle())
                 .views(views)
@@ -70,7 +70,7 @@ public class EventMapper {
                 .annotation(event.getAnnotation())
                 .category(CategoryMapper.mapModelToDto(event.getCategory()))
                 .confirmedRequests(calculateConfirmedRequestFunc.apply(event.getRequests()))
-                .eventDate(event.getEventDate().format(REQUEST_TIME_FORMAT))
+                .eventDate(event.getEventDate().format(DATE_TIME_FORMAT))
                 .initiator(UserMapper.mapModelToShortDto(event.getInitiator()))
                 .paid(event.getPaid())
                 .title(event.getTitle())

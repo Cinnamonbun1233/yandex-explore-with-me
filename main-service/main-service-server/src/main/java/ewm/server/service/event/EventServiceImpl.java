@@ -4,7 +4,6 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import ewm.client.StatsClient;
-import ewm.dto.StatsRequestDto;
 import ewm.dto.StatsResponseDto;
 import ewm.server.dto.event.*;
 import ewm.server.dto.request.ParticipationRequestDto;
@@ -33,6 +32,7 @@ import ewm.server.repo.event.LocationRepo;
 import ewm.server.repo.request.RequestRepo;
 import ewm.server.repo.user.UserRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -50,7 +50,8 @@ import java.util.stream.StreamSupport;
 @Service
 @RequiredArgsConstructor
 public class EventServiceImpl implements EventService {
-    private static final DateTimeFormatter REQUEST_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    @Value("${date-time.format}")
+    private String dateTimePattern;
     private final UserRepo userRepo;
     private final CategoryRepo categoryRepo;
     private final EventRepo eventRepo;
@@ -121,7 +122,6 @@ public class EventServiceImpl implements EventService {
                                                   Optional<Boolean> paid, Optional<String> rangeStart,
                                                   Optional<String> rangeEnd, Boolean onlyAvailable,
                                                   String sort, int from, int size) {
-        saveStats("/events");
         Pageable request = makePageRequest(from, size);
         BooleanExpression searchExp = makeSearchExpPublic(text, categories, paid, rangeStart, rangeEnd);
         Comparator<EventShortDto> comparator = makeComparator(sort);
@@ -143,20 +143,11 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventFullDto getEventByIdPublic(Long id) {
-        saveStats(String.format("/events/%d", id));
         Event eventFound = eventRepo.findByIdAndEventStatus(id, EventStatus.PUBLISHED)
                 .orElseThrow(() -> {
                     throw new EventNotFoundException("Event not found");
                 });
         return EventMapper.mapModelToFullDto(eventFound, getViewsFromStats(eventFound.getId()));
-    }
-
-    private void saveStats(String uri) {
-        statsClient.saveRecord(StatsRequestDto.builder()
-                .uri(uri)
-                .app("ewm-main-service")
-                .timestamp(LocalDateTime.now().format(REQUEST_TIME_FORMAT))
-                .build()).block();
     }
 
     private Integer getViewsFromStats(Long id) {
@@ -417,7 +408,8 @@ public class EventServiceImpl implements EventService {
 
     private void updateEventDate(Event toBeUpdated, UpdateEventRequest updateRequest) {
         if (updateRequest.getEventDate() != null) {
-            LocalDateTime newDateTime = LocalDateTime.parse(updateRequest.getEventDate(), REQUEST_TIME_FORMAT);
+            LocalDateTime newDateTime = LocalDateTime.parse(updateRequest.getEventDate(),
+                    DateTimeFormatter.ofPattern(dateTimePattern));
             validateEventDate(newDateTime);
             toBeUpdated.setEventDate(newDateTime);
         }
@@ -482,6 +474,6 @@ public class EventServiceImpl implements EventService {
     }
 
     private LocalDateTime parseDateTime(String dateTimeString) {
-        return LocalDateTime.parse(dateTimeString, REQUEST_TIME_FORMAT);
+        return LocalDateTime.parse(dateTimeString, DateTimeFormatter.ofPattern(dateTimePattern));
     }
 }
