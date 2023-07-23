@@ -22,8 +22,7 @@ public class EventMapper {
     private static final Function<List<ParticipationRequest>, Integer> CALCULATE_CONFIRMED_REQUEST_FUNC = list ->
             list == null || list.isEmpty() ? 0 : (int) list.stream()
                     .filter(r -> r.getRequestStatus().equals(RequestStatus.CONFIRMED)).count();
-    private static final BiFunction<Long, StatsClient, Integer> GET_VIEWS_OF_EVENT_FUNC = (id, statsClient) ->
-    {
+    private static final BiFunction<Long, StatsClient, Integer> GET_VIEWS_OF_EVENT_FUNC = (id, statsClient) -> {
         StatsResponseDto stats = statsClient.getStats("2000-01-01 00:00:00",
                 "2100-01-01 00:00:00",
                 new String[]{String.format("/events/%d", id)}, "true").blockFirst();

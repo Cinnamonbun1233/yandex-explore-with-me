@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @Service
 public class StatsClient {
-    private static final String BASE_URL = "localhost:9090";
+    private static final String BASE_URL = "stats-server:9090";
     private final WebClient client = WebClient.create();
 
     public Mono<Void> saveRecord(StatsRequestDto request) {

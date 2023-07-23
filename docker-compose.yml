@@ -14,6 +14,8 @@ services:
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
       - TZ=GMT
+    networks:
+      - ewm-bridge
 
   stats-db:
     image: postgres:14-alpine
@@ -26,6 +28,8 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
       - TZ=GMT
+    networks:
+      - ewm-bridge
 
   ewm-service:
     build: main-service/main-service-server
@@ -37,20 +41,27 @@ services:
     depends_on:
       - ewm-db
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5433/ewm_main
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/ewm_main
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
       - TZ=GMT
+    networks:
+      - ewm-bridge
 
   ewm-db:
     image: postgres:14-alpine
     container_name: ewm-main-db
     hostname: ewm-db
     ports:
-      - "6542:5433"
+      - "6542:5432"
     environment:
       - POSTGRES_DB=ewm_main
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
       - TZ=GMT
+    networks:
+      - ewm-bridge
 
+networks:
+  ewm-bridge:
+    driver: bridge
