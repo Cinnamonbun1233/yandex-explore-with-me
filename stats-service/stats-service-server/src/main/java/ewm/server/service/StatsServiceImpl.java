@@ -32,28 +32,12 @@ public class StatsServiceImpl implements StatsService {
     }
 
     @Override
-    public List<StatsResponseDto> getStats(String start, String end, String[] uris, String unique) {
+    public List<StatsResponseDto> getStats(String start, String end, List<String> uris, Boolean unique) {
         validateDates(start, end);
-        return getStatsResponseDtos(start, end, uris, unique);
-    }
-
-    private List<StatsResponseDto> getStatsResponseDtos(String start, String end, String[] uris, String unique) {
-        if (unique == null && uris == null) {
-            return statsRepo.getStatsForDates(parseDateTime(start), parseDateTime(end));
-        } else if (unique != null && uris == null) {
-            if (Boolean.parseBoolean(unique)) {
-                return statsRepo.getStatsForDatesWithUniqueIp(parseDateTime(start), parseDateTime(end));
-            } else {
-                return statsRepo.getStatsForDates(parseDateTime(start), parseDateTime(end));
-            }
-        } else if (unique == null) {
-            return statsRepo.getStatsForDatesAndUris(parseDateTime(start), parseDateTime(end), uris);
+        if (Boolean.TRUE.equals(unique)) {
+            return statsRepo.getStatsForDatesAndUrisWithUniqueIp(parseDateTime(start), parseDateTime(end), uris);
         } else {
-            if (Boolean.parseBoolean(unique)) {
-                return statsRepo.getStatsForDatesAndUrisWithUniqueIp(parseDateTime(start), parseDateTime(end), uris);
-            } else {
-                return statsRepo.getStatsForDatesAndUris(parseDateTime(start), parseDateTime(end), uris);
-            }
+            return statsRepo.getStatsForDatesAndUris(parseDateTime(start), parseDateTime(end), uris);
         }
     }
 

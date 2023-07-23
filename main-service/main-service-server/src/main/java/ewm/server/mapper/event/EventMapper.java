@@ -30,8 +30,9 @@ public class EventMapper {
                         .getStats(
                                 "2000-01-01 00:00:00",
                                 "2100-01-01 00:00:00",
-                                new String[]{String.format("/events/%d", id)},
-                                "true")
+                                List.of(new String[]{String.format("/events/%d", id)}),
+                                Boolean.valueOf("true")
+                        )
                         .blockFirst();
                 return statsResponseDto == null ? 0 : statsResponseDto.getHits().intValue();
             };

@@ -20,17 +20,17 @@ public class StatsServerController {
         this.statsService = statsService;
     }
 
-    @GetMapping("/stats")
-    public ResponseEntity<List<StatsResponseDto>> getStats(@RequestParam("start") String start,
-                                                           @RequestParam("end") String end,
-                                                           @RequestParam(value = "uris", required = false) String[] uris,
-                                                           @RequestParam(value = "unique", required = false) String unique) {
-        return ResponseEntity.ok().body(statsService.getStats(start, end, uris, unique));
-    }
-
     @PostMapping(value = "/hit")
     public ResponseEntity<Void> addHit(@RequestBody StatsRequestDto statsRequestDto, HttpServletRequest httpServletRequest) {
         statsService.saveRecord(statsRequestDto, httpServletRequest);
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<List<StatsResponseDto>> getStats(@RequestParam("start") String start,
+                                                           @RequestParam("end") String end,
+                                                           @RequestParam(value = "uris", required = false) List<String> uris,
+                                                           @RequestParam(value = "unique", required = false) Boolean unique) {
+        return ResponseEntity.ok().body(statsService.getStats(start, end, uris, unique));
     }
 }
