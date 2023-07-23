@@ -4,7 +4,6 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import ewm.client.StatsClient;
-import ewm.dto.StatsResponseDto;
 import ewm.server.dto.event.*;
 import ewm.server.dto.request.ParticipationRequestDto;
 import ewm.server.exception.category.CategoryNotFoundException;
@@ -70,7 +69,7 @@ public class EventServiceImpl implements EventService {
         newEvent.setCreatedOn(LocalDateTime.now());
         newEvent.setEventStatus(EventStatus.PENDING);
         Event savedEvent = eventRepo.save(newEvent);
-        return EventMapper.mapModelToFullDto(savedEvent, getViewsFromStats(savedEvent.getId()));
+        return EventMapper.mapModelToFullDto(savedEvent, statsClient);
     }
 
     @Transactional
@@ -80,7 +79,7 @@ public class EventServiceImpl implements EventService {
         updateEvent(toBeUpdated, updateRequest);
         updateStatusAdmin(toBeUpdated, updateRequest);
         Event savedEvent = eventRepo.save(toBeUpdated);
-        return EventMapper.mapModelToFullDto(savedEvent, getViewsFromStats(savedEvent.getId()));
+        return EventMapper.mapModelToFullDto(savedEvent, statsClient);
     }
 
     @Transactional
@@ -92,7 +91,7 @@ public class EventServiceImpl implements EventService {
         updateEvent(toBeUpdated, updateRequest);
         updateStatusUser(toBeUpdated, updateRequest);
         Event savedEvent = eventRepo.save(toBeUpdated);
-        return EventMapper.mapModelToFullDto(savedEvent, getViewsFromStats(savedEvent.getId()));
+        return EventMapper.mapModelToFullDto(savedEvent, statsClient);
     }
 
     @Override
@@ -103,7 +102,7 @@ public class EventServiceImpl implements EventService {
         BooleanExpression searchExp = makeSearchExpAdmin(users, states, categories, rangeStart, rangeEnd);
         return eventRepo.findAll(searchExp, request).stream()
                 .sorted(Comparator.comparing(Event::getEventDate))
-                .map(e -> EventMapper.mapModelToFullDto(e, getViewsFromStats(e.getId())))
+                .map(e -> EventMapper.mapModelToFullDto(e, statsClient))
                 .collect(Collectors.toList());
     }
 
@@ -113,7 +112,7 @@ public class EventServiceImpl implements EventService {
         BooleanExpression byUserId = QEvent.event.initiator.id.eq(userId);
         return eventRepo.findAll(byUserId, request).stream()
                 .sorted(Comparator.comparing(Event::getEventDate))
-                .map(e -> EventMapper.mapModelToShortDto(e, getViewsFromStats(e.getId())))
+                .map(e -> EventMapper.mapModelToShortDto(e, statsClient))
                 .collect(Collectors.toList());
     }
 
@@ -130,12 +129,12 @@ public class EventServiceImpl implements EventService {
                     .filter(e -> e.getRequests().stream()
                                          .filter(r -> r.getRequestStatus().equals(RequestStatus.CONFIRMED))
                                          .count() < e.getParticipationLimit())
-                    .map(e -> EventMapper.mapModelToShortDto(e, getViewsFromStats(e.getId())))
+                    .map(e -> EventMapper.mapModelToShortDto(e, statsClient))
                     .sorted(comparator)
                     .collect(Collectors.toList());
         } else {
             return eventRepo.findAll(searchExp, request).stream()
-                    .map(e -> EventMapper.mapModelToShortDto(e, getViewsFromStats(e.getId())))
+                    .map(e -> EventMapper.mapModelToShortDto(e, statsClient))
                     .sorted(comparator)
                     .collect(Collectors.toList());
         }
@@ -147,14 +146,7 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> {
                     throw new EventNotFoundException("Event not found");
                 });
-        return EventMapper.mapModelToFullDto(eventFound, getViewsFromStats(eventFound.getId()));
-    }
-
-    private Integer getViewsFromStats(Long id) {
-        StatsResponseDto stats = statsClient.getStats("2000-01-01 00:00:00",
-                "2100-01-01 00:00:00",
-                new String[]{String.format("/events/%d", id)}, "true").blockFirst();
-        return stats == null ? 0 : stats.getHits().intValue();
+        return EventMapper.mapModelToFullDto(eventFound,statsClient);
     }
 
     @Override
@@ -164,7 +156,7 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> {
                     throw new EventNotFoundException("Event not found");
                 });
-        return EventMapper.mapModelToFullDto(eventFound, getViewsFromStats(eventFound.getId()));
+        return EventMapper.mapModelToFullDto(eventFound, statsClient);
     }
 
     @Transactional
