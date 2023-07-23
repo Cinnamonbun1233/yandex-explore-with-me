@@ -13,8 +13,6 @@ import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -28,19 +26,15 @@ import java.util.Set;
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    Long eventId;
     @Column(name = "title")
     String title;
     @Column(name = "annotation")
     @NotBlank
-    @NotEmpty
-    @NotNull
     @Length(min = 20, max = 2000)
     String annotation;
     @Column(name = "description")
     @NotBlank
-    @NotEmpty
-    @NotNull
     @Length(min = 20, max = 7000)
     String description;
     @Column(name = "event_date")
@@ -58,7 +52,7 @@ public class Event {
     @Enumerated(EnumType.STRING)
     EventStatus eventStatus;
     @OneToOne
-    @JoinColumn(name = "location_id", referencedColumnName = "id")
+    @JoinColumn(name = "location_id", referencedColumnName = "location_id")
     Location location;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")

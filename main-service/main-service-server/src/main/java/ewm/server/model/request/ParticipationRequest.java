@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 public class ParticipationRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    Long requestId;
     @Column(name = "created")
     LocalDateTime created;
     @Enumerated(EnumType.STRING)

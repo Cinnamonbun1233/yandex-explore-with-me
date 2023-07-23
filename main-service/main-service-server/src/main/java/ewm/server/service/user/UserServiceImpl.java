@@ -44,12 +44,12 @@ public class UserServiceImpl implements UserService {
 
     private void checkIfUserExists(Long userId) {
         if (userRepo.findById(userId).isEmpty()) {
-            throw new UserNotFoundException("User not found");
+            throw new UserNotFoundException(String.format("User %d not found", userId));
         }
     }
 
     private List<UserDto> getUsersByIds(Long[] ids, Pageable request) {
-        return userRepo.findAllByIdIn(ids, request).getContent().stream()
+        return userRepo.findAllByUserIdIn(ids, request).getContent().stream()
                 .map(UserMapper::mapModelToDto).collect(Collectors.toList());
     }
 

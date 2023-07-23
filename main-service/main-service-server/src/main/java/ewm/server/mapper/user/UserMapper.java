@@ -8,7 +8,7 @@ import ewm.server.model.user.User;
 public class UserMapper {
     public static UserShortDto mapModelToShortDto(User model) {
         return UserShortDto.builder()
-                .id(model.getId())
+                .id(model.getUserId())
                 .name(model.getName())
                 .build();
     }
@@ -22,7 +22,7 @@ public class UserMapper {
 
     public static UserDto mapModelToDto(User model) {
         return UserDto.builder()
-                .id(model.getId())
+                .id(model.getUserId())
                 .name(model.getName())
                 .email(model.getEmail())
                 .build();

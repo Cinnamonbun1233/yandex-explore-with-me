@@ -109,7 +109,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<EventShortDto> getAllUsersEvents(Long userId, int from, int size) {
         Pageable request = makePageRequest(from, size);
-        BooleanExpression byUserId = QEvent.event.initiator.id.eq(userId);
+        BooleanExpression byUserId = QEvent.event.initiator.userId.eq(userId);
         return eventRepo.findAll(byUserId, request).stream()
                 .sorted(Comparator.comparing(Event::getEventDate))
                 .map(e -> EventMapper.mapModelToShortDto(e, statsClient))
@@ -142,9 +142,9 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventFullDto getEventByIdPublic(Long id) {
-        Event eventFound = eventRepo.findByIdAndEventStatus(id, EventStatus.PUBLISHED)
+        Event eventFound = eventRepo.findByEventIdAndEventStatus(id, EventStatus.PUBLISHED)
                 .orElseThrow(() -> {
-                    throw new EventNotFoundException("Event not found");
+                    throw new EventNotFoundException(String.format("Event %d not found", id));
                 });
         return EventMapper.mapModelToFullDto(eventFound, statsClient);
     }
@@ -154,7 +154,7 @@ public class EventServiceImpl implements EventService {
         checkIfUserExists(userId);
         Event eventFound = eventRepo.findById(eventId)
                 .orElseThrow(() -> {
-                    throw new EventNotFoundException("Event not found");
+                    throw new EventNotFoundException(String.format("Event %d not found", eventId));
                 });
         return EventMapper.mapModelToFullDto(eventFound, statsClient);
     }
@@ -171,11 +171,11 @@ public class EventServiceImpl implements EventService {
         List<ParticipationRequest> updatedRequests = requestRepo.saveAllAndFlush(toBeUpdated);
         rejectPendingRequestsIfParticipantLimitIsReached(updatedRequests);
         return EventRequestStatusUpdateResult.builder()
-                .confirmedRequests(requestRepo.findAllByRequestStatusAndEvent_Id(RequestStatus.CONFIRMED, eventId)
+                .confirmedRequests(requestRepo.findAllByRequestStatusAndEvent_EventId(RequestStatus.CONFIRMED, eventId)
                         .stream()
                         .map(RequestMapper::mapModelToDto)
                         .collect(Collectors.toList()))
-                .rejectedRequests(requestRepo.findAllByRequestStatusAndEvent_Id(RequestStatus.REJECTED, eventId)
+                .rejectedRequests(requestRepo.findAllByRequestStatusAndEvent_EventId(RequestStatus.REJECTED, eventId)
                         .stream()
                         .map(RequestMapper::mapModelToDto)
                         .collect(Collectors.toList()))
@@ -186,7 +186,7 @@ public class EventServiceImpl implements EventService {
     public List<ParticipationRequestDto> getRequestsToUsersEvent(Long userId, Long eventId) {
         checkIfUserExists(userId);
         Event eventFound = eventRepo.findById(eventId).orElseThrow(() -> {
-            throw new EventNotFoundException("Event does not exist");
+            throw new EventNotFoundException(String.format("Event %d not found", eventId));
         });
         return eventFound.getRequests().stream().map(RequestMapper::mapModelToDto).collect(Collectors.toList());
     }
@@ -225,8 +225,8 @@ public class EventServiceImpl implements EventService {
     private List<ParticipationRequest> makeListOfRequestsToBeUpdated(Long eventId,
                                                                      EventRequestStatusUpdateRequest request) {
         QParticipationRequest qRequest = QParticipationRequest.participationRequest;
-        BooleanExpression exp = qRequest.event.id.eq(eventId)
-                .and(qRequest.id.in(request.getRequestIds()));
+        BooleanExpression exp = qRequest.event.eventId.eq(eventId)
+                .and(qRequest.requestId.in(request.getRequestIds()));
         return StreamSupport.stream(requestRepo.findAll(exp).spliterator(), false)
                 .collect(Collectors.toList());
     }
@@ -251,11 +251,11 @@ public class EventServiceImpl implements EventService {
     private BooleanExpression makeSearchExpAdmin(Optional<Integer[]> users, Optional<String[]> states, Optional<Integer[]> categories, Optional<String> rangeStart, Optional<String> rangeEnd) {
         QEvent qEvent = QEvent.event;
         BooleanBuilder builder = new BooleanBuilder();
-        users.ifPresent(userIds -> builder.and(qEvent.initiator.id.in(userIds)));
+        users.ifPresent(userIds -> builder.and(qEvent.initiator.userId.in(userIds)));
         states.ifPresent(stateStrings -> builder.and(qEvent.eventStatus.in(Arrays.stream(states.get())
                 .map(this::parseEventStatus)
                 .toArray(EventStatus[]::new))));
-        categories.ifPresent(categoryIds -> builder.and(qEvent.category.id.in(categoryIds)));
+        categories.ifPresent(categoryIds -> builder.and(qEvent.category.categoryId.in(categoryIds)));
         rangeStart.ifPresent(start -> builder.and(qEvent.eventDate.after(parseDateTime(start))));
         rangeEnd.ifPresent(end -> builder.and(qEvent.eventDate.before(parseDateTime(end))));
         return builder.getValue() != null ? Expressions.asBoolean(builder.getValue()) : qEvent.isNotNull();
@@ -271,7 +271,7 @@ public class EventServiceImpl implements EventService {
             BooleanExpression descriptionContainsText = qEvent.description.likeIgnoreCase(str);
             builder.and(annotationContainsText.or(descriptionContainsText));
         });
-        categories.ifPresent(categoryIds -> builder.and(qEvent.category.id.in(categoryIds)));
+        categories.ifPresent(categoryIds -> builder.and(qEvent.category.categoryId.in(categoryIds)));
         if (rangeStart.isPresent() && rangeEnd.isPresent()) {
             validateSearchDates(rangeStart.get(), rangeEnd.get());
         }
@@ -296,25 +296,25 @@ public class EventServiceImpl implements EventService {
 
     private Category getCategory(Integer categoryId) {
         return categoryRepo.findById(categoryId.longValue()).orElseThrow(() -> {
-            throw new CategoryNotFoundException("Category does not exist");
+            throw new CategoryNotFoundException(String.format("Category %d does not exist", categoryId));
         });
     }
 
     private User getInitiator(Long userId) {
         return userRepo.findById(userId).orElseThrow(() -> {
-            throw new UserNotFoundException("User does not exist");
+            throw new UserNotFoundException(String.format("User %d does not exist", userId));
         });
     }
 
     private Event getEvent(Long eventId) {
         return eventRepo.findById(eventId).orElseThrow(() -> {
-            throw new EventNotFoundException("Event does not exist");
+            throw new EventNotFoundException(String.format("Event %d does not exist", eventId));
         });
     }
 
     private void checkIfUserExists(Long userId) {
         if (!userRepo.existsById(userId)) {
-            throw new UserNotFoundException("User does not exist");
+            throw new UserNotFoundException(String.format("User %d does not exist", userId));
         }
     }
 
@@ -409,7 +409,7 @@ public class EventServiceImpl implements EventService {
 
     private void updateCategory(Event toBeUpdated, UpdateEventRequest updateRequest) {
         if (updateRequest.getCategory() != null) {
-            if (!(updateRequest.getCategory().longValue() == toBeUpdated.getCategory().getId())) {
+            if (!(updateRequest.getCategory().longValue() == toBeUpdated.getCategory().getCategoryId())) {
                 toBeUpdated.setCategory(getCategory(updateRequest.getCategory()));
             }
         }

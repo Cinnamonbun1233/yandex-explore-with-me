@@ -7,6 +7,6 @@ public class CategoryNotFoundException extends RuntimeException {
 
     @Override
     public String getLocalizedMessage() {
-        return "Compilation was not found";
+        return "Category was not found";
     }
 }

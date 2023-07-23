@@ -8,5 +8,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UserRepo extends JpaRepository<User, Long> {
-    Page<User> findAllByIdIn(Long[] ids, Pageable page);
+    Page<User> findAllByUserIdIn(Long[] ids, Pageable page);
 }

@@ -43,7 +43,7 @@ public class EventMapper {
 
     public static EventFullDto mapModelToFullDto(Event event, StatsClient statsClient) {
         return EventFullDto.builder()
-                .id(event.getId())
+                .id(event.getEventId())
                 .annotation(event.getAnnotation())
                 .paid(event.getPaid())
                 .category(CategoryMapper.mapModelToDto(event.getCategory()))
@@ -53,7 +53,7 @@ public class EventMapper {
                 .eventDate(event.getEventDate().format(DATE_TIME_FORMAT))
                 .state(event.getEventStatus())
                 .title(event.getTitle())
-                .views(GET_VIEWS_OF_EVENT_FUNC.apply(event.getId(), statsClient))
+                .views(GET_VIEWS_OF_EVENT_FUNC.apply(event.getEventId(), statsClient))
                 .initiator(UserMapper.mapModelToShortDto(event.getInitiator()))
                 .location(LocationMapper.mapModelToDto(event.getLocation()))
                 .participantLimit(event.getParticipationLimit())
@@ -64,7 +64,7 @@ public class EventMapper {
 
     public static EventShortDto mapModelToShortDto(Event event, StatsClient statsClient) {
         return EventShortDto.builder()
-                .id(event.getId())
+                .id(event.getEventId())
                 .annotation(event.getAnnotation())
                 .category(CategoryMapper.mapModelToDto(event.getCategory()))
                 .confirmedRequests(CALCULATE_CONFIRMED_REQUEST_FUNC.apply(event.getRequests()))
@@ -72,7 +72,7 @@ public class EventMapper {
                 .initiator(UserMapper.mapModelToShortDto(event.getInitiator()))
                 .paid(event.getPaid())
                 .title(event.getTitle())
-                .views(GET_VIEWS_OF_EVENT_FUNC.apply(event.getId(), statsClient))
+                .views(GET_VIEWS_OF_EVENT_FUNC.apply(event.getEventId(), statsClient))
                 .build();
     }
 }

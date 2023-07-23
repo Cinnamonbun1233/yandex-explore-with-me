@@ -14,11 +14,13 @@ public class StatsClient {
     private static final String BASE_URL = "stats-server:9090";
     private final WebClient client = WebClient.create();
 
-    public Mono<Void> saveRecord(StatsRequestDto request) {
-        return client.post()
+    public Mono<Void> saveRecord(StatsRequestDto statsRequestDto) {
+        return client
+                .post()
                 .uri(String.format("%s/hit", BASE_URL))
-                .bodyValue(request)
-                .retrieve().bodyToMono(Void.class);
+                .bodyValue(statsRequestDto)
+                .retrieve()
+                .bodyToMono(Void.class);
     }
 
     public Flux<StatsResponseDto> getStats(String start, String end, String[] uris, String unique) {

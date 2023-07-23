@@ -13,7 +13,8 @@ import java.util.List;
 
 @RestController
 public class CategoryController {
-    private static final String CAT_ADMIN_PATH = "/admin/categories";
+    private static final String CAT_ADMIN_GENERAL_PATH = "/admin/categories";
+    private static final String CAT_ADMIN_BY_ID_PATH = CAT_ADMIN_GENERAL_PATH + "/{catId}";
     private static final String CAT_PUBLIC_PATH = "/categories";
     private final CategoryService categoryService;
 
@@ -22,17 +23,17 @@ public class CategoryController {
         this.categoryService = categoryService;
     }
 
-    @PostMapping(value = CAT_ADMIN_PATH)
+    @PostMapping(value = CAT_ADMIN_GENERAL_PATH)
     public ResponseEntity<CategoryDto> addCategory(@Valid @RequestBody NewCategoryDto category) {
         return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.addCategory(category));
     }
 
-    @PatchMapping(value = CAT_ADMIN_PATH + "/{catId}")
+    @PatchMapping(value = CAT_ADMIN_BY_ID_PATH)
     public ResponseEntity<CategoryDto> updateCategory(@PathVariable("catId") Long catId, @Valid @RequestBody CategoryDto category) {
         return ResponseEntity.ok().body(categoryService.updateCategory(catId, category));
     }
 
-    @DeleteMapping(value = CAT_ADMIN_PATH + "/{catId}")
+    @DeleteMapping(value = CAT_ADMIN_BY_ID_PATH)
     public ResponseEntity<Void> deleteCategory(@PathVariable("catId") Long catId) {
         categoryService.deleteCategory(catId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

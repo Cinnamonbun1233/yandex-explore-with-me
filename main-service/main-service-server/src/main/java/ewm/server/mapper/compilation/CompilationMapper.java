@@ -18,7 +18,7 @@ public class CompilationMapper {
 
     public static CompilationDto mapModelToDto(Compilation model, StatsClient client) {
         return CompilationDto.builder()
-                .id(model.getId())
+                .id(model.getCompilationId())
                 .title(model.getTitle())
                 .pinned(model.getPinned())
                 .events(model.getEvents().stream()

@@ -1,17 +1,15 @@
 package ewm.server.model;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
+@Table(name = "records")
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "records")
 public class StatsRecord {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,6 +20,6 @@ public class StatsRecord {
     String uri;
     @Column(name = "ip")
     String ip;
-    @Column(name = "timestamp")
+    @Column(name = "time_stamp")
     LocalDateTime timestamp;
 }
