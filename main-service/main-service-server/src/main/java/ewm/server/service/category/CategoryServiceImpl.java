@@ -49,7 +49,7 @@ public class CategoryServiceImpl implements CategoryService {
         return CategoryMapper.mapModelToDto(categoryRepo.save(category));
     }
 
-    @Transactional
+    @Override
     public void deleteCategory(Long catId) {
         checkIfCategoryExists(catId);
         categoryRepo.deleteById(catId);
