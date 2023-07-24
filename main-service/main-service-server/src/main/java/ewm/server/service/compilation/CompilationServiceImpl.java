@@ -23,13 +23,13 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class CompilationServiceImpl implements CompilationService {
     private final CompilationRepo compilationRepo;
     private final EventRepo eventRepo;
     private final StatsClient statsClient;
 
     @Transactional
+    @Override
     public CompilationDto addCompilation(NewCompilationDto newCompilationDto) {
         Compilation compilation = CompilationMapper.mapDtoToModel(newCompilationDto);
 
@@ -43,6 +43,7 @@ public class CompilationServiceImpl implements CompilationService {
         return CompilationMapper.mapModelToDto(compilationRepo.save(compilation), statsClient);
     }
 
+    @Override
     public List<CompilationDto> getAllCompilations(Optional<Boolean> pinned, int from, int size) {
         Pageable request = makePageRequest(from, size);
         List<Compilation> compilations;
@@ -59,6 +60,7 @@ public class CompilationServiceImpl implements CompilationService {
                 .collect(Collectors.toList());
     }
 
+    @Override
     public CompilationDto getCompilationById(Long compId) {
         Compilation compilation = compilationRepo.findById(compId).orElseThrow(
                 () -> new CompilationNotFoundException(String.format("Compilation %d does not exist", compId)));
@@ -67,6 +69,7 @@ public class CompilationServiceImpl implements CompilationService {
 
 
     @Transactional
+    @Override
     public CompilationDto updateCompilation(Long compId, UpdateCompilationRequest updateCompilationRequest) {
         Compilation toBeUpdated = compilationRepo.findById(compId).orElseThrow(
                 () -> new CompilationNotFoundException(String.format("Compilation %d does not exist", compId)));
@@ -76,7 +79,7 @@ public class CompilationServiceImpl implements CompilationService {
         return CompilationMapper.mapModelToDto(compilationRepo.save(toBeUpdated), statsClient);
     }
 
-    @Transactional
+    @Override
     public void deleteCompilation(Long compId) {
         compilationRepo.deleteById(compId);
     }

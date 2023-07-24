@@ -48,7 +48,6 @@ import java.util.stream.StreamSupport;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class EventServiceImpl implements EventService {
     @Value("${date-time.format}")
     private String dateTimePattern;
@@ -60,6 +59,7 @@ public class EventServiceImpl implements EventService {
     private final StatsClient statsClient;
 
     @Transactional
+    @Override
     public EventFullDto addEvent(Long userId, NewEventDto newEventDto) {
         Event newEvent = EventMapper.mapDtoToModel(newEventDto);
         validateEventDate(newEvent.getEventDate());
@@ -73,6 +73,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Transactional
+    @Override
     public EventFullDto updateEventAdmin(Long eventId, UpdateEventRequest updateEventRequest) {
         Event toBeUpdated = getEvent(eventId);
         updateEvent(toBeUpdated, updateEventRequest);
@@ -82,6 +83,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Transactional
+    @Override
     public EventFullDto updateEventPrivate(Long userId, Long eventId, UpdateEventRequest updateEventRequest) {
         checkIfUserExists(userId);
         Event toBeUpdated = getEvent(eventId);
@@ -92,6 +94,7 @@ public class EventServiceImpl implements EventService {
         return EventMapper.mapModelToFullDto(savedEvent, statsClient);
     }
 
+    @Override
     public List<EventFullDto> searchEventsAdmin(Optional<Integer[]> users,
                                                 Optional<String[]> states,
                                                 Optional<Integer[]> categories,
@@ -109,6 +112,7 @@ public class EventServiceImpl implements EventService {
                 .collect(Collectors.toList());
     }
 
+    @Override
     public List<EventShortDto> getAllUsersEvents(Long userId, int from, int size) {
         Pageable request = makePageRequest(from, size);
         BooleanExpression byUserId = QEvent.event.initiator.userId.eq(userId);
@@ -120,6 +124,7 @@ public class EventServiceImpl implements EventService {
                 .collect(Collectors.toList());
     }
 
+    @Override
     public List<EventShortDto> searchEventsPublic(Optional<String> text,
                                                   Optional<Integer[]> categories,
                                                   Optional<Boolean> paid,
@@ -153,12 +158,14 @@ public class EventServiceImpl implements EventService {
         }
     }
 
+    @Override
     public EventFullDto getEventByIdPublic(Long id) {
         Event eventFound = eventRepo.findByEventIdAndEventStatus(id, EventStatus.PUBLISHED).orElseThrow(
                 () -> new EventNotFoundException(String.format("Event %d not found", id)));
         return EventMapper.mapModelToFullDto(eventFound, statsClient);
     }
 
+    @Override
     public EventFullDto getEventByIdPrivate(Long userId, Long eventId) {
         checkIfUserExists(userId);
         Event eventFound = eventRepo.findById(eventId).orElseThrow(
@@ -167,6 +174,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Transactional
+    @Override
     public EventRequestStatusUpdateResult updateRequestByInitiator(Long userId,
                                                                    Long eventId,
                                                                    EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest) {
@@ -191,6 +199,7 @@ public class EventServiceImpl implements EventService {
                 .build();
     }
 
+    @Override
     public List<ParticipationRequestDto> getRequestsToUsersEvent(Long userId, Long eventId) {
         checkIfUserExists(userId);
         Event eventFound = eventRepo.findById(eventId).orElseThrow(

@@ -15,11 +15,11 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
     private final UserRepo userRepo;
 
     @Transactional
+    @Override
     public UserDto addUser(NewUserRequest newUserRequest) {
         return UserMapper.mapModelToDto(userRepo.save(UserMapper.mapDtoToModel(newUserRequest)));
     }
@@ -33,6 +33,7 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toList());
     }
 
+    @Override
     public List<UserDto> getUsers(List<Long> ids, Pageable pageable) {
         return ids == null ? getAllUsers(pageable) : getUsersByIds(ids, pageable);
     }
@@ -42,7 +43,7 @@ public class UserServiceImpl implements UserService {
                 .map(UserMapper::mapModelToDto).collect(Collectors.toList());
     }
 
-    @Transactional
+    @Override
     public void deleteUserById(Long userId) {
         checkIfUserExists(userId);
         userRepo.deleteById(userId);

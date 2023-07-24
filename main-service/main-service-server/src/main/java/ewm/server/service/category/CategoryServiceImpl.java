@@ -21,10 +21,12 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepo categoryRepo;
 
     @Transactional
+    @Override
     public CategoryDto addCategory(NewCategoryDto newCategoryDto) {
         return CategoryMapper.mapModelToDto(categoryRepo.save(CategoryMapper.mapDtoToModel(newCategoryDto)));
     }
 
+    @Override
     public List<CategoryDto> getAllCategories(int from, int size) {
         Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size);
         return categoryRepo
@@ -35,12 +37,14 @@ public class CategoryServiceImpl implements CategoryService {
                 .collect(Collectors.toList());
     }
 
+    @Override
     public CategoryDto getCategoryById(Long catId) {
         checkIfCategoryExists(catId);
         return CategoryMapper.mapModelToDto(categoryRepo.findById(catId).orElseThrow());
     }
 
     @Transactional
+    @Override
     public CategoryDto updateCategory(Long catId, CategoryDto categoryDto) {
         Category category = categoryRepo.findById(catId).orElseThrow(
                 () -> new CategoryNotFoundException(String.format("Category %d does not exist", catId)));
@@ -48,6 +52,7 @@ public class CategoryServiceImpl implements CategoryService {
         return CategoryMapper.mapModelToDto(categoryRepo.save(category));
     }
 
+    @Override
     public void deleteCategory(Long catId) {
         checkIfCategoryExists(catId);
         categoryRepo.deleteById(catId);

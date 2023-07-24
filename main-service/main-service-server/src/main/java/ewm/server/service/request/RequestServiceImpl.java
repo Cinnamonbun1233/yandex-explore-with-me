@@ -27,13 +27,13 @@ import java.util.stream.StreamSupport;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class RequestServiceImpl implements RequestService {
     private final RequestRepo requestRepo;
     private final UserRepo userRepo;
     private final EventRepo eventRepo;
 
     @Transactional
+    @Override
     public ParticipationRequestDto addRequest(Long userId, Long eventId) {
         checkIfRequestWasAlreadyCreated(userId, eventId);
         checkIfInitiatorIsCreatingRequest(userId, eventId);
@@ -56,6 +56,7 @@ public class RequestServiceImpl implements RequestService {
         return RequestMapper.mapModelToDto(requestRepo.save(newRequest));
     }
 
+    @Override
     public List<ParticipationRequestDto> getUsersRequests(Long userId) {
         QParticipationRequest participationRequest = QParticipationRequest.participationRequest;
         BooleanExpression byRequesterId = participationRequest.requester.userId.eq(userId);
@@ -66,6 +67,7 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Transactional
+    @Override
     public ParticipationRequestDto cancelOwnRequest(Long userId, Long requestId) {
         checkIfUserExists(userId);
         ParticipationRequest toBeCanceled = requestRepo.findById(requestId).orElseThrow(
