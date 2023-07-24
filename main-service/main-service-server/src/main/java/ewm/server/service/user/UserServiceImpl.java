@@ -34,12 +34,12 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toList());
     }
 
-    public List<UserDto> getUsers(Long[] ids, Integer from, Integer size) {
+    public List<UserDto> getUsers(List<Long> ids, Integer from, Integer size) {
         Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size);
         return ids == null ? getAllUsers(pageable) : getUsersByIds(ids, pageable);
     }
 
-    private List<UserDto> getUsersByIds(Long[] ids, Pageable pageable) {
+    private List<UserDto> getUsersByIds(List<Long> ids, Pageable pageable) {
         return userRepo.findAllByUserIdIn(ids, pageable).getContent().stream()
                 .map(UserMapper::mapModelToDto).collect(Collectors.toList());
     }
