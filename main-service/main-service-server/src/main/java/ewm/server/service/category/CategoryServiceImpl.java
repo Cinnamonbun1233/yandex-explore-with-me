@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepo categoryRepo;
 
@@ -49,7 +48,6 @@ public class CategoryServiceImpl implements CategoryService {
         return CategoryMapper.mapModelToDto(categoryRepo.save(category));
     }
 
-    @Override
     public void deleteCategory(Long catId) {
         checkIfCategoryExists(catId);
         categoryRepo.deleteById(catId);
