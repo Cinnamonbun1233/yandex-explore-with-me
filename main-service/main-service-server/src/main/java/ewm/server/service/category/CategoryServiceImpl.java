@@ -49,7 +49,6 @@ public class CategoryServiceImpl implements CategoryService {
         return CategoryMapper.mapModelToDto(categoryRepo.save(category));
     }
 
-    @Transactional
     public void deleteCategory(Long catId) {
         checkIfCategoryExists(catId);
         categoryRepo.deleteById(catId);
