@@ -44,6 +44,7 @@ public class UserServiceImpl implements UserService {
                 .map(UserMapper::mapModelToDto).collect(Collectors.toList());
     }
 
+    @Transactional
     public void deleteUserById(Long userId) {
         checkIfUserExists(userId);
         userRepo.deleteById(userId);

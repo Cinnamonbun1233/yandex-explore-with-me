@@ -76,6 +76,7 @@ public class CompilationServiceImpl implements CompilationService {
         return CompilationMapper.mapModelToDto(compilationRepo.save(toBeUpdated), statsClient);
     }
 
+    @Transactional
     public void deleteCompilation(Long compId) {
         compilationRepo.deleteById(compId);
     }
