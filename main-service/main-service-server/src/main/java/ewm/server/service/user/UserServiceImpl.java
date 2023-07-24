@@ -5,7 +5,7 @@ import ewm.server.dto.user.UserDto;
 import ewm.server.exception.user.UserNotFoundException;
 import ewm.server.mapper.user.UserMapper;
 import ewm.server.repo.user.UserRepo;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,16 +15,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService {
     private final UserRepo userRepo;
 
-    @Autowired
-    public UserServiceImpl(UserRepo userRepo) {
-        this.userRepo = userRepo;
-    }
-
     @Transactional
-    @Override
     public UserDto addUser(NewUserRequest newUserRequest) {
         return UserMapper.mapModelToDto(userRepo.save(UserMapper.mapDtoToModel(newUserRequest)));
     }
@@ -38,7 +34,6 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toList());
     }
 
-    @Override
     public List<UserDto> getUsers(Long[] ids, Integer from, Integer size) {
         Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size);
         return ids == null ? getAllUsers(pageable) : getUsersByIds(ids, pageable);
@@ -50,7 +45,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Transactional
-    @Override
     public void deleteUserById(Long userId) {
         checkIfUserExists(userId);
         userRepo.deleteById(userId);
