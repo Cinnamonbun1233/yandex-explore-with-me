@@ -4,6 +4,8 @@ import ewm.server.dto.user.NewUserRequest;
 import ewm.server.dto.user.UserDto;
 import ewm.server.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +32,8 @@ public class UserController {
     public ResponseEntity<List<UserDto>> getUsers(@RequestParam(required = false) List<Long> ids,
                                                   @RequestParam(required = false, defaultValue = "0") Integer from,
                                                   @RequestParam(required = false, defaultValue = "10") Integer size) {
-        return ResponseEntity.ok().body(userService.getUsers(ids, from, size));
+        Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size);
+        return ResponseEntity.ok().body(userService.getUsers(ids, pageable));
     }
 
     @DeleteMapping("/{userId}")

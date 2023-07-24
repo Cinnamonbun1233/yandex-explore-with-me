@@ -6,7 +6,6 @@ import ewm.server.exception.user.UserNotFoundException;
 import ewm.server.mapper.user.UserMapper;
 import ewm.server.repo.user.UserRepo;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,8 +33,7 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toList());
     }
 
-    public List<UserDto> getUsers(List<Long> ids, Integer from, Integer size) {
-        Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size);
+    public List<UserDto> getUsers(List<Long> ids, Pageable pageable) {
         return ids == null ? getAllUsers(pageable) : getUsersByIds(ids, pageable);
     }
 
