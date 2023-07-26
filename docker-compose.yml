@@ -1,28 +1,21 @@
 version: '3.1'
 services:
-  stats-client:
-    build: stats-service/stats-service-client
-    image: stats-service-client
-    container_name: ewm-stats-client
-    hostname: stats-client
-    ports:
-      - "9090:9090"
-    depends_on:
-      - stats-server
-
   stats-server:
     build: stats-service/stats-service-server
     image: stats-service-server
     container_name: ewm-stats-server
     hostname: stats-server
     ports:
-      - "8081:8081"
+      - "9090:9090"
     depends_on:
       - stats-db
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://stats-db:5432/ewm
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
+      - TZ=GMT
+    networks:
+      - ewm-bridge
 
   stats-db:
     image: postgres:14-alpine
@@ -32,5 +25,43 @@ services:
       - "6541:5432"
     environment:
       - POSTGRES_DB=ewm
-      - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - TZ=GMT
+    networks:
+      - ewm-bridge
+
+  ewm-service:
+    build: main-service/main-service-server
+    image: main-service-server
+    container_name: ewm-main-server
+    hostname: main-server
+    ports:
+      - "8080:8080"
+    depends_on:
+      - ewm-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/ewm_main
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - TZ=GMT
+    networks:
+      - ewm-bridge
+
+  ewm-db:
+    image: postgres:14-alpine
+    container_name: ewm-main-db
+    hostname: ewm-db
+    ports:
+      - "6542:5432"
+    environment:
+      - POSTGRES_DB=ewm_main
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - TZ=GMT
+    networks:
+      - ewm-bridge
+
+networks:
+  ewm-bridge:
+    driver: bridge

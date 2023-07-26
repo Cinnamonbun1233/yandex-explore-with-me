@@ -4,18 +4,19 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <modules>
-        <module>main-service-server</module>
-    </modules>
-
     <parent>
         <artifactId>explore-with-me</artifactId>
         <groupId>ru.practicum</groupId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>main-service</artifactId>
     <packaging>pom</packaging>
+
+    <artifactId>main-service</artifactId>
+
+    <modules>
+        <module>main-service-server</module>
+    </modules>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>

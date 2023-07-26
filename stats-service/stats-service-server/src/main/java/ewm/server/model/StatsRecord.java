@@ -1,5 +1,6 @@
 package ewm.server.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
+@AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "records")
 public class StatsRecord {
@@ -22,6 +24,6 @@ public class StatsRecord {
     String uri;
     @Column(name = "ip")
     String ip;
-    @Column(name = "timestamp")
+    @Column(name = "time_stamp")
     LocalDateTime timestamp;
 }

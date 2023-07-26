@@ -7,14 +7,14 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class StatsMapper {
-    private static final DateTimeFormatter REQUEST_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public static StatsRecord mapRequestToModel(StatsRequestDto statsRequestDto) {
         StatsRecord record = new StatsRecord();
         record.setApp(statsRequestDto.getApp());
         record.setUri(statsRequestDto.getUri());
         record.setIp(statsRequestDto.getIp());
-        record.setTimestamp(LocalDateTime.parse(statsRequestDto.getTimestamp(), REQUEST_TIME_FORMAT));
+        record.setTimestamp(LocalDateTime.parse(statsRequestDto.getTimestamp(), DATE_TIME_FORMATTER));
         return record;
     }
 }

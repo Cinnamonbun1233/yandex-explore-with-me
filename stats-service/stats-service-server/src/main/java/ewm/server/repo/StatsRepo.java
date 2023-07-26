@@ -13,21 +13,21 @@ import java.util.List;
 @Repository
 public interface StatsRepo extends JpaRepository<StatsRecord, Long> {
     @Query("SELECT NEW ewm.dto.StatsResponseDto(r.app, r.uri, COUNT(r.uri)) " +
-            "FROM StatsRecord AS r " +
-            "WHERE r.timestamp BETWEEN :start AND :end " +
-            "AND ((:uris) IS NULL OR r.uri IN (:uris)) " +
-            "GROUP BY r.app, r.uri " +
-            "ORDER BY COUNT(r.uri) DESC")
+           "FROM StatsRecord AS r " +
+           "WHERE r.timestamp BETWEEN :start AND :end " +
+           "AND ((:uris) IS NULL OR r.uri IN (:uris)) " +
+           "GROUP BY r.app, r.uri " +
+           "ORDER BY COUNT(r.uri) DESC")
     List<StatsResponseDto> getStatsForDatesAndUris(@Param("start") LocalDateTime start,
                                                    @Param("end") LocalDateTime end,
                                                    @Param("uris") List<String> uris);
 
     @Query("SELECT NEW ewm.dto.StatsResponseDto(r.app, r.uri, COUNT(DISTINCT r.ip)) " +
-            "FROM StatsRecord AS r " +
-            "WHERE r.timestamp BETWEEN :start AND :end " +
-            "AND ((:uris) IS NULL OR r.uri IN (:uris)) " +
-            "GROUP BY r.app, r.uri " +
-            "ORDER BY COUNT(DISTINCT r.ip) DESC")
+           "FROM StatsRecord AS r " +
+           "WHERE r.timestamp BETWEEN :start AND :end " +
+           "AND ((:uris) IS NULL OR r.uri IN (:uris)) " +
+           "GROUP BY r.app, r.uri " +
+           "ORDER BY COUNT(DISTINCT r.ip) DESC")
     List<StatsResponseDto> getStatsForDatesAndUrisWithUniqueIp(@Param("start") LocalDateTime start,
                                                                @Param("end") LocalDateTime end,
                                                                @Param("uris") List<String> uris);

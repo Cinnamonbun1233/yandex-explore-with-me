@@ -1,8 +1,7 @@
-package ewm.client.client;
+package ewm.client;
 
 import ewm.dto.StatsRequestDto;
 import ewm.dto.StatsResponseDto;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
@@ -13,21 +12,20 @@ import java.util.Optional;
 
 @Service
 public class StatsClient {
-    @Value("${stats-service-server.url}")
-    private String baseUrl;
+    private static final String BASE_URL = "stats-server:9090";
     private final WebClient webClient = WebClient.create();
 
     public Mono<Void> saveRecord(StatsRequestDto statsRequestDto) {
         return webClient
                 .post()
-                .uri(String.format("%s/hit", baseUrl))
+                .uri(String.format("%s/hit", BASE_URL))
                 .bodyValue(statsRequestDto)
                 .retrieve()
                 .bodyToMono(Void.class);
     }
 
     public Flux<StatsResponseDto> getStats(String start, String end, List<String> uris, Boolean unique) {
-        if (uris == null || uris.isEmpty()) {
+        if (uris == null) {
             return getStatsWithoutUri(start, end, unique);
         } else {
             return getStatsWithUri(start, end, uris, unique);
@@ -39,7 +37,7 @@ public class StatsClient {
         return webClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
-                        .path(String.format("%s/stats", baseUrl))
+                        .path(String.format("%s/stats", BASE_URL))
                         .queryParam("start", start)
                         .queryParam("end", end)
                         .queryParam("uris", uris)
@@ -54,7 +52,7 @@ public class StatsClient {
         return webClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
-                        .path(String.format("%s/stats", baseUrl))
+                        .path(String.format("%s/stats", BASE_URL))
                         .queryParam("start", start)
                         .queryParam("end", end)
                         .queryParamIfPresent("unique", uniqueOpt)
