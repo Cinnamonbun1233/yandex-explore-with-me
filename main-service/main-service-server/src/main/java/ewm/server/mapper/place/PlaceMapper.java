@@ -16,6 +16,7 @@ public class PlaceMapper {
     public static PlaceDto mapModelToDto(Place model) {
         return PlaceDto.builder()
                 .placeId(model.getPlaceId())
+                .name(model.getName())
                 .lat(model.getLat())
                 .lon(model.getLon())
                 .radius(model.getRadius())
