@@ -13,5 +13,5 @@ public interface PlaceService {
 
     List<EventShortDto> getEventsNearbyPlace(Long placeId);
 
-    List<EventShortDto> getEventsNearbyUsersLocation(Long userId, LocationDto usersLocation);
+    List<EventShortDto> getEventsNearbyUsersLocation(Long userId, LocationDto usersLocation, Long radius);
 }

@@ -42,7 +42,8 @@ public class PlaceController {
 
     @GetMapping(PRIVATE_PLACE_PATH)
     public ResponseEntity<List<EventShortDto>> getEventsNearbyUsersLocation(@PathVariable("userId") Long userId,
-                                                                            @Valid @RequestBody LocationDto usersLocation) {
-        return ResponseEntity.ok().body(placeService.getEventsNearbyUsersLocation(userId, usersLocation));
+                                                                            @Valid @RequestBody LocationDto usersLocation,
+                                                                            @RequestParam(name = "radius", required = false, defaultValue = "1") Long radius) {
+        return ResponseEntity.ok().body(placeService.getEventsNearbyUsersLocation(userId, usersLocation, radius));
     }
 }

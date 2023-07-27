@@ -1,6 +1,7 @@
 package ewm.server.mapper.place;
 
 import ewm.server.dto.place.PlaceDto;
+import ewm.server.model.place.Place;
 
 public class PlaceMapper {
     public static Place mapDtoToModel(PlaceDto dto) {
