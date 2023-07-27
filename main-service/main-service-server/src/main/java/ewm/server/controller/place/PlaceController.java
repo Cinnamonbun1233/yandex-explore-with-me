@@ -1,8 +1,16 @@
 package ewm.server.controller.place;
 
+import ewm.server.dto.event.EventShortDto;
+import ewm.server.dto.event.LocationDto;
+import ewm.server.dto.place.PlaceDto;
 import ewm.server.service.place.PlaceService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 public class PlaceController {
@@ -15,5 +23,26 @@ public class PlaceController {
     @Autowired
     public PlaceController(PlaceService placeService) {
         this.placeService = placeService;
+    }
+
+    @PostMapping(value = ADMIN_PLACES_PATH)
+    public ResponseEntity<PlaceDto> addPlace(@Valid @RequestBody PlaceDto placeDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(placeService.addPlace(placeDto));
+    }
+
+    @GetMapping(ADMIN_PLACES_PATH)
+    public ResponseEntity<List<PlaceDto>> getAllPlaces() {
+        return ResponseEntity.ok().body(placeService.getAllPlaces());
+    }
+
+    @GetMapping(PUBLIC_PLACE_PATH)
+    public ResponseEntity<List<EventShortDto>> getEventsNearbyPlace(@PathVariable("placeId") Long placeId) {
+        return ResponseEntity.ok().body(placeService.getEventsNearbyPlace(placeId));
+    }
+
+    @GetMapping(PRIVATE_PLACE_PATH)
+    public ResponseEntity<List<EventShortDto>> getEventsNearbyUsersLocation(@PathVariable("userId") Long userId,
+                                                                            @Valid @RequestBody LocationDto usersLocation) {
+        return ResponseEntity.ok().body(placeService.getEventsNearbyUsersLocation(userId, usersLocation));
     }
 }
