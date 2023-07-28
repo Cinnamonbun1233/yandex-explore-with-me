@@ -26,20 +26,11 @@ public class CategoryController {
     }
 
     @PostMapping(value = CAT_ADMIN_GENERAL_PATH)
-    public ResponseEntity<CategoryDto> addCategory(@Valid @RequestBody NewCategoryDto newCategoryDto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.createNewCategory(newCategoryDto));
-    }
+    public ResponseEntity<CategoryDto> createNewCategory(@Valid @RequestBody NewCategoryDto newCategoryDto) {
 
-    @PatchMapping(value = CAT_ADMIN_BY_ID_PATH)
-    public ResponseEntity<CategoryDto> updateCategory(@PathVariable("catId") Long catId,
-                                                      @Valid @RequestBody CategoryDto categoryDto) {
-        return ResponseEntity.ok().body(categoryService.updateCategoryById(catId, categoryDto));
-    }
-
-    @DeleteMapping(value = CAT_ADMIN_BY_ID_PATH)
-    public ResponseEntity<Void> deleteCategory(@PathVariable("catId") Long catId) {
-        categoryService.deleteCategoryById(catId);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(categoryService.createNewCategory(newCategoryDto));
     }
 
     @GetMapping(CAT_PUBLIC_PATH)
@@ -48,11 +39,35 @@ public class CategoryController {
 
         Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size);
 
-        return ResponseEntity.ok().body(categoryService.getAllCategories(pageable));
+        return ResponseEntity
+                .ok()
+                .body(categoryService.getAllCategories(pageable));
     }
 
     @GetMapping(CAT_PUBLIC_PATH + "/{catId}")
-    public ResponseEntity<CategoryDto> getCategoryById(@PathVariable("catId") Long catId) {
-        return ResponseEntity.ok().body(categoryService.getCategoryById(catId));
+    public ResponseEntity<CategoryDto> getCategoryById(@PathVariable("catId") Long categoryId) {
+
+        return ResponseEntity
+                .ok()
+                .body(categoryService.getCategoryById(categoryId));
+    }
+
+    @PatchMapping(value = CAT_ADMIN_BY_ID_PATH)
+    public ResponseEntity<CategoryDto> updateCategoryById(@PathVariable("catId") Long categoryId,
+                                                          @Valid @RequestBody CategoryDto categoryDto) {
+
+        return ResponseEntity
+                .ok()
+                .body(categoryService.updateCategoryById(categoryId, categoryDto));
+    }
+
+    @DeleteMapping(value = CAT_ADMIN_BY_ID_PATH)
+    public ResponseEntity<Void> deleteCategoryById(@PathVariable("catId") Long categoryId) {
+
+        categoryService.deleteCategoryById(categoryId);
+
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .build();
     }
 }

@@ -27,7 +27,7 @@ public class CompilationController {
     }
 
     @PostMapping(value = COMPILATIONS_ADMIN_PATH)
-    public ResponseEntity<CompilationDto> addCompilation(@Valid @RequestBody NewCompilationDto newCompilationDto) {
+    public ResponseEntity<CompilationDto> createNewCompilation(@Valid @RequestBody NewCompilationDto newCompilationDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(compilationService.createNewCompilation(newCompilationDto));
     }
 

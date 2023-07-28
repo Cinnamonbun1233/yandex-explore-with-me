@@ -23,6 +23,7 @@ public class RequestController {
     @PostMapping
     public ResponseEntity<ParticipationRequestDto> addRequest(@PathVariable("userId") Long userId,
                                                               @RequestParam("eventId") Long eventId) {
+
         return ResponseEntity.status(HttpStatus.CREATED).body(requestService.createNewRequest(userId, eventId));
     }
 
