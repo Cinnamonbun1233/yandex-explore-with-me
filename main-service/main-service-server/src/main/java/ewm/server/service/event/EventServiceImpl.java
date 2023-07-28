@@ -102,7 +102,7 @@ public class EventServiceImpl implements EventService {
         return event
                 .getRequests()
                 .stream()
-                .map(RequestMapper::mapModelToDto)
+                .map(RequestMapper::participationRequestToParticipationRequestDto)
                 .collect(Collectors.toList());
     }
 
@@ -230,11 +230,11 @@ public class EventServiceImpl implements EventService {
                 .builder()
                 .confirmedRequests(requestRepo.findAllByRequestStatusAndEventEventId(RequestStatus.CONFIRMED, eventId)
                         .stream()
-                        .map(RequestMapper::mapModelToDto)
+                        .map(RequestMapper::participationRequestToParticipationRequestDto)
                         .collect(Collectors.toList()))
                 .rejectedRequests(requestRepo.findAllByRequestStatusAndEventEventId(RequestStatus.REJECTED, eventId)
                         .stream()
-                        .map(RequestMapper::mapModelToDto)
+                        .map(RequestMapper::participationRequestToParticipationRequestDto)
                         .collect(Collectors.toList()))
                 .build();
     }
