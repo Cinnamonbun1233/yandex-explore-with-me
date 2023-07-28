@@ -27,7 +27,7 @@ public class PlaceController {
 
     @PostMapping(value = ADMIN_PLACES_PATH)
     public ResponseEntity<PlaceDto> addPlace(@Valid @RequestBody PlaceDto placeDto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(placeService.addPlace(placeDto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(placeService.createNewPlace(placeDto));
     }
 
     @GetMapping(ADMIN_PLACES_PATH)

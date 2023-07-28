@@ -17,54 +17,74 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@FieldDefaults(
+        level = AccessLevel.PRIVATE,
+        makeFinal = true
+)
 public class PlaceServiceImpl implements PlaceService {
-    UserRepo userRepo;
-    PlaceRepo placeRepo;
-    EventRepo eventRepo;
-    StatsClient statsClient;
+    private final UserRepo userRepo;
+    private final PlaceRepo placeRepo;
+    private final EventRepo eventRepo;
+    private final StatsClient statsClient;
 
+    @Transactional
     @Override
-    public PlaceDto addPlace(PlaceDto placeDto) {
-        Place toBeAdded = PlaceMapper.mapDtoToModel(placeDto);
-        return PlaceMapper.mapModelToDto(placeRepo.save(toBeAdded));
+    public PlaceDto createNewPlace(PlaceDto placeDto) {
+
+        Place place = PlaceMapper.mapDtoToModel(placeDto);
+
+        return PlaceMapper.mapModelToDto(placeRepo.save(place));
     }
 
+    @Transactional
     @Override
     public List<PlaceDto> getAllPlaces() {
-        return placeRepo.findAll().stream().map(PlaceMapper::mapModelToDto).collect(Collectors.toList());
-    }
 
-    @Override
-    public List<EventShortDto> getEventsNearbyPlace(Long placeId) {
-        Place placeToBeSearched = placeRepo.findById(placeId).orElseThrow(() -> {
-            throw new PlaceNotFoundException(String.format("Place %d has not been added by admin", placeId));
-        });
-        return eventRepo.findEventsNearby(placeToBeSearched.getLongitude(), placeToBeSearched.getLatitude(),
-                        placeToBeSearched.getRadius())
+        return placeRepo
+                .findAll()
                 .stream()
-                .filter(e -> e.getEventStatus().equals(EventStatus.PUBLISHED))
-                .map(e -> EventMapper.mapModelToShortDto(e, statsClient))
+                .map(PlaceMapper::mapModelToDto)
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     @Override
-    public List<EventShortDto> getEventsNearbyUsersLocation(Long userId, LocationDto usersLocation, Long radius) {
-        checkIfUserExists(userId);
-        return eventRepo.findEventsNearby(usersLocation.getLon(), usersLocation.getLat(), radius.doubleValue())
+    public List<EventShortDto> getEventsNearbyPlace(Long placeId) {
+
+        Place place = placeRepo.findById(placeId)
+                .orElseThrow(() -> new PlaceNotFoundException(String.format("Place %d has not been added by admin", placeId)));
+
+        return eventRepo
+                .findEventsNearby(place.getLongitude(), place.getLatitude(), place.getRadius())
                 .stream()
-                .filter(e -> e.getEventStatus().equals(EventStatus.PUBLISHED))
-                .map(e -> EventMapper.mapModelToShortDto(e, statsClient))
+                .filter(event -> event.getEventStatus().equals(EventStatus.PUBLISHED))
+                .map(event -> EventMapper.mapModelToShortDto(event, statsClient))
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    @Override
+    public List<EventShortDto> getEventsNearbyUsersLocation(Long userId, LocationDto locationDto, Long radius) {
+
+        checkIfUserExists(userId);
+
+        return eventRepo
+                .findEventsNearby(locationDto.getLon(), locationDto.getLat(), radius.doubleValue())
+                .stream()
+                .filter(event -> event.getEventStatus().equals(EventStatus.PUBLISHED))
+                .map(event -> EventMapper.mapModelToShortDto(event, statsClient))
                 .collect(Collectors.toList());
     }
 
     private void checkIfUserExists(Long userId) {
+        
         if (!userRepo.existsById(userId)) {
             throw new UserNotFoundException(String.format("User %d does not exist", userId));
         }

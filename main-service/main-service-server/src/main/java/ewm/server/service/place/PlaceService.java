@@ -7,11 +7,11 @@ import ewm.server.dto.place.PlaceDto;
 import java.util.List;
 
 public interface PlaceService {
-    PlaceDto addPlace(PlaceDto placeDto);
+    PlaceDto createNewPlace(PlaceDto placeDto);
 
     List<PlaceDto> getAllPlaces();
 
     List<EventShortDto> getEventsNearbyPlace(Long placeId);
 
-    List<EventShortDto> getEventsNearbyUsersLocation(Long userId, LocationDto usersLocation, Long radius);
+    List<EventShortDto> getEventsNearbyUsersLocation(Long userId, LocationDto locationDto, Long radius);
 }
