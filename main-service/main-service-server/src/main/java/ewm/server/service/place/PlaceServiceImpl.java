@@ -46,7 +46,7 @@ public class PlaceServiceImpl implements PlaceService {
         Place placeToBeSearched = placeRepo.findById(placeId).orElseThrow(() -> {
             throw new PlaceNotFoundException(String.format("Place %d has not been added by admin", placeId));
         });
-        return eventRepo.findEventsNearby(placeToBeSearched.getLon(), placeToBeSearched.getLat(),
+        return eventRepo.findEventsNearby(placeToBeSearched.getLongitude(), placeToBeSearched.getLatitude(),
                         placeToBeSearched.getRadius())
                 .stream()
                 .filter(e -> e.getEventStatus().equals(EventStatus.PUBLISHED))

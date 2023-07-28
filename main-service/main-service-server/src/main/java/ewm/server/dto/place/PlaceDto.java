@@ -16,9 +16,9 @@ public class PlaceDto {
     @NotBlank
     String name;
     @NotNull
-    Double lat;
+    Double latitude;
     @NotNull
-    Double lon;
+    Double longitude;
     @NotNull
     Double radius;
 }

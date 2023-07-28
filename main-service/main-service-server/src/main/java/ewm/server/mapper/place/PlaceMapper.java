@@ -7,8 +7,8 @@ public class PlaceMapper {
     public static Place mapDtoToModel(PlaceDto dto) {
         Place place = new Place();
         place.setName(dto.getName());
-        place.setLat(dto.getLat());
-        place.setLon(dto.getLon());
+        place.setLatitude(dto.getLatitude());
+        place.setLongitude(dto.getLongitude());
         place.setRadius(dto.getRadius());
         return place;
     }
@@ -17,8 +17,8 @@ public class PlaceMapper {
         return PlaceDto.builder()
                 .placeId(model.getPlaceId())
                 .name(model.getName())
-                .lat(model.getLat())
-                .lon(model.getLon())
+                .latitude(model.getLatitude())
+                .longitude(model.getLongitude())
                 .radius(model.getRadius())
                 .build();
     }
