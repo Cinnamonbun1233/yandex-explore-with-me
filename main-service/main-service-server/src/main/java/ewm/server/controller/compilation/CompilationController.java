@@ -28,18 +28,10 @@ public class CompilationController {
 
     @PostMapping(value = COMPILATIONS_ADMIN_PATH)
     public ResponseEntity<CompilationDto> createNewCompilation(@Valid @RequestBody NewCompilationDto newCompilationDto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(compilationService.createNewCompilation(newCompilationDto));
-    }
 
-    @PatchMapping(value = COMPILATIONS_ADMIN_PATH + "/{compId}")
-    public ResponseEntity<CompilationDto> updateCompilation(@PathVariable("compId") Long compId,
-                                                            @Valid @RequestBody UpdateCompilationRequest updateCompilationRequest) {
-        return ResponseEntity.ok().body(compilationService.updateCompilationById(compId, updateCompilationRequest));
-    }
-
-    @GetMapping(COMPILATIONS_PUBLIC_PATH + "/{compId}")
-    public ResponseEntity<CompilationDto> getCompilationById(@PathVariable("compId") Long compId) {
-        return ResponseEntity.ok().body(compilationService.getCompilationById(compId));
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(compilationService.createNewCompilation(newCompilationDto));
     }
 
     @GetMapping(COMPILATIONS_PUBLIC_PATH)
@@ -49,12 +41,35 @@ public class CompilationController {
 
         Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size);
 
-        return ResponseEntity.ok().body(compilationService.getAllCompilations(pinned, pageable));
+        return ResponseEntity
+                .ok()
+                .body(compilationService.getAllCompilations(pinned, pageable));
+    }
+
+    @GetMapping(COMPILATIONS_PUBLIC_PATH + "/{compId}")
+    public ResponseEntity<CompilationDto> getCompilationById(@PathVariable("compId") Long compilationId) {
+
+        return ResponseEntity
+                .ok()
+                .body(compilationService.getCompilationById(compilationId));
+    }
+
+    @PatchMapping(value = COMPILATIONS_ADMIN_PATH + "/{compId}")
+    public ResponseEntity<CompilationDto> updateCompilationById(@PathVariable("compId") Long compilationId,
+                                                                @Valid @RequestBody UpdateCompilationRequest updateCompilationRequest) {
+
+        return ResponseEntity
+                .ok()
+                .body(compilationService.updateCompilationById(compilationId, updateCompilationRequest));
     }
 
     @DeleteMapping(COMPILATIONS_ADMIN_PATH + "/{compId}")
-    public ResponseEntity<Void> deleteCompilation(@PathVariable("compId") Long compId) {
-        compilationService.deleteCompilationById(compId);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    public ResponseEntity<Void> deleteCompilationById(@PathVariable("compId") Long compilationId) {
+
+        compilationService.deleteCompilationById(compilationId);
+
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .build();
     }
 }
