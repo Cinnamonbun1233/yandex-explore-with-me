@@ -23,17 +23,17 @@ public class RequestController {
     @PostMapping
     public ResponseEntity<ParticipationRequestDto> addRequest(@PathVariable("userId") Long userId,
                                                               @RequestParam("eventId") Long eventId) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(requestService.addRequest(userId, eventId));
+        return ResponseEntity.status(HttpStatus.CREATED).body(requestService.createNewRequest(userId, eventId));
     }
 
     @PatchMapping(value = CANCEL_OWN_REQUEST_PATH)
     public ResponseEntity<ParticipationRequestDto> cancelOwnRequest(@PathVariable("userId") Long userId,
                                                                     @PathVariable("requestId") Long requestId) {
-        return ResponseEntity.ok().body(requestService.cancelOwnRequest(userId, requestId));
+        return ResponseEntity.ok().body(requestService.cancelOwnRequestById(userId, requestId));
     }
 
     @GetMapping
     public ResponseEntity<List<ParticipationRequestDto>> getUsersRequests(@PathVariable("userId") Long userId) {
-        return ResponseEntity.ok().body(requestService.getUsersRequests(userId));
+        return ResponseEntity.ok().body(requestService.getUsersRequestsById(userId));
     }
 }
