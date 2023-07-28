@@ -12,7 +12,11 @@ import javax.persistence.*;
 @Getter
 @Setter
 @ToString
-@Table(name = "categories", schema = "public", uniqueConstraints = @UniqueConstraint(columnNames = "name"))
+@Table(
+        name = "categories",
+        schema = "public",
+        uniqueConstraints = @UniqueConstraint(columnNames = "name")
+)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Category {
     @Id

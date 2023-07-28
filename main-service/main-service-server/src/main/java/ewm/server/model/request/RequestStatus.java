@@ -1,5 +1,8 @@
 package ewm.server.model.request;
 
 public enum RequestStatus {
-    CONFIRMED, REJECTED, PENDING, CANCELED
+    CONFIRMED,
+    REJECTED,
+    PENDING,
+    CANCELED
 }

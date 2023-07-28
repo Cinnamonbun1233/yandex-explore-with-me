@@ -52,7 +52,10 @@ public class Event {
     @Enumerated(EnumType.STRING)
     EventStatus eventStatus;
     @OneToOne
-    @JoinColumn(name = "location_id", referencedColumnName = "location_id")
+    @JoinColumn(
+            name = "location_id",
+            referencedColumnName = "location_id"
+    )
     Location location;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")

@@ -9,7 +9,10 @@ import lombok.experimental.FieldDefaults;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "places", schema = "public")
+@Table(
+        name = "places",
+        schema = "public"
+)
 @Getter
 @Setter
 @ToString
