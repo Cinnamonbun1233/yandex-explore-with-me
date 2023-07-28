@@ -61,7 +61,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public EventFullDto createNewEvent(Long userId, NewEventDto newEventDto) {
 
-        Event newEvent = EventMapper.mapDtoToModel(newEventDto);
+        Event newEvent = EventMapper.newEventDtoToEvent(newEventDto);
 
         validateEventDate(newEvent.getEventDate());
 
@@ -73,7 +73,7 @@ public class EventServiceImpl implements EventService {
 
         Event savedEvent = eventRepo.save(newEvent);
 
-        return EventMapper.mapModelToFullDto(savedEvent, statsClient);
+        return EventMapper.eventToEventFullDto(savedEvent, statsClient);
     }
 
     @Transactional
@@ -86,7 +86,7 @@ public class EventServiceImpl implements EventService {
                 .findAll(byUserId, pageable)
                 .stream()
                 .sorted(Comparator.comparing(Event::getEventDate))
-                .map(event -> EventMapper.mapModelToShortDto(event, statsClient))
+                .map(event -> EventMapper.eventToEventShortDto(event, statsClient))
                 .collect(Collectors.toList());
     }
 
@@ -102,7 +102,7 @@ public class EventServiceImpl implements EventService {
         return event
                 .getRequests()
                 .stream()
-                .map(RequestMapper::mapModelToDto)
+                .map(RequestMapper::participationRequestToParticipationRequestDto)
                 .collect(Collectors.toList());
     }
 
@@ -115,7 +115,7 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepo.findById(eventId)
                 .orElseThrow(() -> new EventNotFoundException(String.format("Event %d not found", eventId)));
 
-        return EventMapper.mapModelToFullDto(event, statsClient);
+        return EventMapper.eventToEventFullDto(event, statsClient);
     }
 
     @Transactional
@@ -125,7 +125,7 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepo.findByEventIdAndEventStatus(eventId, EventStatus.PUBLISHED)
                 .orElseThrow(() -> new EventNotFoundException(String.format("Event %d not found", eventId)));
 
-        return EventMapper.mapModelToFullDto(event, statsClient);
+        return EventMapper.eventToEventFullDto(event, statsClient);
     }
 
     @Transactional
@@ -143,7 +143,7 @@ public class EventServiceImpl implements EventService {
                 .findAll(searchExp, pageable)
                 .stream()
                 .sorted(Comparator.comparing(Event::getEventDate))
-                .map(event -> EventMapper.mapModelToFullDto(event, statsClient))
+                .map(event -> EventMapper.eventToEventFullDto(event, statsClient))
                 .collect(Collectors.toList());
     }
 
@@ -173,14 +173,14 @@ public class EventServiceImpl implements EventService {
                                                      .getRequestStatus()
                                                      .equals(RequestStatus.CONFIRMED))
                                              .count() < event.getParticipationLimit())
-                    .map(event -> EventMapper.mapModelToShortDto(event, statsClient))
+                    .map(event -> EventMapper.eventToEventShortDto(event, statsClient))
                     .sorted(comparator)
                     .collect(Collectors.toList());
         } else {
             return eventRepo
                     .findAll(searchExp, pageable)
                     .stream()
-                    .map(event -> EventMapper.mapModelToShortDto(event, statsClient))
+                    .map(event -> EventMapper.eventToEventShortDto(event, statsClient))
                     .sorted(comparator)
                     .collect(Collectors.toList());
         }
@@ -195,7 +195,7 @@ public class EventServiceImpl implements EventService {
         updateStatusAdmin(toBeUpdated, updateEventRequest);
         Event savedEvent = eventRepo.save(toBeUpdated);
 
-        return EventMapper.mapModelToFullDto(savedEvent, statsClient);
+        return EventMapper.eventToEventFullDto(savedEvent, statsClient);
     }
 
     @Transactional
@@ -209,7 +209,7 @@ public class EventServiceImpl implements EventService {
         updateStatusUser(toBeUpdated, updateEventRequest);
         Event savedEvent = eventRepo.save(toBeUpdated);
 
-        return EventMapper.mapModelToFullDto(savedEvent, statsClient);
+        return EventMapper.eventToEventFullDto(savedEvent, statsClient);
     }
 
     @Transactional
@@ -230,11 +230,11 @@ public class EventServiceImpl implements EventService {
                 .builder()
                 .confirmedRequests(requestRepo.findAllByRequestStatusAndEventEventId(RequestStatus.CONFIRMED, eventId)
                         .stream()
-                        .map(RequestMapper::mapModelToDto)
+                        .map(RequestMapper::participationRequestToParticipationRequestDto)
                         .collect(Collectors.toList()))
                 .rejectedRequests(requestRepo.findAllByRequestStatusAndEventEventId(RequestStatus.REJECTED, eventId)
                         .stream()
-                        .map(RequestMapper::mapModelToDto)
+                        .map(RequestMapper::participationRequestToParticipationRequestDto)
                         .collect(Collectors.toList()))
                 .build();
     }
@@ -405,7 +405,7 @@ public class EventServiceImpl implements EventService {
 
     private Location saveLocation(LocationDto locationDto) {
 
-        return locationRepo.save(LocationMapper.mapDtoToModel(locationDto));
+        return locationRepo.save(LocationMapper.locationDtoToLocation(locationDto));
     }
 
     private Category getCategory(Integer categoryId) {

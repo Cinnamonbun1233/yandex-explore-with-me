@@ -22,7 +22,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto createNewUser(NewUserRequest newUserRequest) {
 
-        return UserMapper.mapModelToDto(userRepo.save(UserMapper.mapDtoToModel(newUserRequest)));
+        return UserMapper.userToUserDto(userRepo.save(UserMapper.newUserRequestToUser(newUserRequest)));
     }
 
     @Transactional
@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService {
                 .findAll(pageable)
                 .getContent()
                 .stream()
-                .map(UserMapper::mapModelToDto)
+                .map(UserMapper::userToUserDto)
                 .collect(Collectors.toList());
     }
 
@@ -48,7 +48,7 @@ public class UserServiceImpl implements UserService {
                 .findAllByUserIdIn(ids, pageable)
                 .getContent()
                 .stream()
-                .map(UserMapper::mapModelToDto)
+                .map(UserMapper::userToUserDto)
                 .collect(Collectors.toList());
     }
 

@@ -38,9 +38,9 @@ public class PlaceServiceImpl implements PlaceService {
     @Override
     public PlaceDto createNewPlace(PlaceDto placeDto) {
 
-        Place place = PlaceMapper.mapDtoToModel(placeDto);
+        Place place = PlaceMapper.placeDtoToPlace(placeDto);
 
-        return PlaceMapper.mapModelToDto(placeRepo.save(place));
+        return PlaceMapper.placeToPlaceDto(placeRepo.save(place));
     }
 
     @Transactional
@@ -50,7 +50,7 @@ public class PlaceServiceImpl implements PlaceService {
         return placeRepo
                 .findAll()
                 .stream()
-                .map(PlaceMapper::mapModelToDto)
+                .map(PlaceMapper::placeToPlaceDto)
                 .collect(Collectors.toList());
     }
 
@@ -65,7 +65,7 @@ public class PlaceServiceImpl implements PlaceService {
                 .findEventsNearby(place.getLongitude(), place.getLatitude(), place.getRadius())
                 .stream()
                 .filter(event -> event.getEventStatus().equals(EventStatus.PUBLISHED))
-                .map(event -> EventMapper.mapModelToShortDto(event, statsClient))
+                .map(event -> EventMapper.eventToEventShortDto(event, statsClient))
                 .collect(Collectors.toList());
     }
 
@@ -79,7 +79,7 @@ public class PlaceServiceImpl implements PlaceService {
                 .findEventsNearby(locationDto.getLon(), locationDto.getLat(), radius.doubleValue())
                 .stream()
                 .filter(event -> event.getEventStatus().equals(EventStatus.PUBLISHED))
-                .map(event -> EventMapper.mapModelToShortDto(event, statsClient))
+                .map(event -> EventMapper.eventToEventShortDto(event, statsClient))
                 .collect(Collectors.toList());
     }
 

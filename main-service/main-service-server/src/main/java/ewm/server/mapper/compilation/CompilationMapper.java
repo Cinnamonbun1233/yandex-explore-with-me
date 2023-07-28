@@ -29,7 +29,7 @@ public class CompilationMapper {
                 .events(compilation
                         .getEvents()
                         .stream()
-                        .map(event -> EventMapper.mapModelToShortDto(event, statsClient))
+                        .map(event -> EventMapper.eventToEventShortDto(event, statsClient))
                         .collect(Collectors.toList()))
                 .build();
     }
