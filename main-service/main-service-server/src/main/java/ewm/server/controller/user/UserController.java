@@ -24,21 +24,32 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<UserDto> addUser(@Valid @RequestBody NewUserRequest newUserRequest) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.createNewUser(newUserRequest));
+    public ResponseEntity<UserDto> createNewUser(@Valid @RequestBody NewUserRequest newUserRequest) {
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(userService.createNewUser(newUserRequest));
     }
 
     @GetMapping
-    public ResponseEntity<List<UserDto>> getUsers(@RequestParam(required = false) List<Long> ids,
-                                                  @RequestParam(required = false, defaultValue = "0") Integer from,
-                                                  @RequestParam(required = false, defaultValue = "10") Integer size) {
+    public ResponseEntity<List<UserDto>> getAllUsers(@RequestParam(required = false) List<Long> ids,
+                                                     @RequestParam(required = false, defaultValue = "0") Integer from,
+                                                     @RequestParam(required = false, defaultValue = "10") Integer size) {
+
         Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size);
-        return ResponseEntity.ok().body(userService.getAllUsers(ids, pageable));
+
+        return ResponseEntity
+                .ok()
+                .body(userService.getAllUsers(ids, pageable));
     }
 
     @DeleteMapping("/{userId}")
     public ResponseEntity<Void> deleteUserById(@PathVariable("userId") Long userId) {
+
         userService.deleteUserById(userId);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .build();
     }
 }

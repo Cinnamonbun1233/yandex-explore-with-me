@@ -26,24 +26,36 @@ public class PlaceController {
     }
 
     @PostMapping(value = ADMIN_PLACES_PATH)
-    public ResponseEntity<PlaceDto> addPlace(@Valid @RequestBody PlaceDto placeDto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(placeService.createNewPlace(placeDto));
+    public ResponseEntity<PlaceDto> createNewPlace(@Valid @RequestBody PlaceDto placeDto) {
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(placeService.createNewPlace(placeDto));
     }
 
     @GetMapping(ADMIN_PLACES_PATH)
     public ResponseEntity<List<PlaceDto>> getAllPlaces() {
-        return ResponseEntity.ok().body(placeService.getAllPlaces());
+
+        return ResponseEntity
+                .ok()
+                .body(placeService.getAllPlaces());
     }
 
     @GetMapping(PUBLIC_PLACE_PATH)
     public ResponseEntity<List<EventShortDto>> getEventsNearbyPlace(@PathVariable("placeId") Long placeId) {
-        return ResponseEntity.ok().body(placeService.getEventsNearbyPlace(placeId));
+
+        return ResponseEntity
+                .ok()
+                .body(placeService.getEventsNearbyPlace(placeId));
     }
 
     @GetMapping(PRIVATE_PLACE_PATH)
     public ResponseEntity<List<EventShortDto>> getEventsNearbyUsersLocation(@PathVariable("userId") Long userId,
                                                                             @Valid @RequestBody LocationDto usersLocation,
                                                                             @RequestParam(name = "radius", required = false, defaultValue = "1") Long radius) {
-        return ResponseEntity.ok().body(placeService.getEventsNearbyUsersLocation(userId, usersLocation, radius));
+
+        return ResponseEntity
+                .ok()
+                .body(placeService.getEventsNearbyUsersLocation(userId, usersLocation, radius));
     }
 }
