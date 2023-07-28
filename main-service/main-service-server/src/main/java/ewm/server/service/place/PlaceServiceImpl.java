@@ -84,7 +84,7 @@ public class PlaceServiceImpl implements PlaceService {
     }
 
     private void checkIfUserExists(Long userId) {
-        
+
         if (!userRepo.existsById(userId)) {
             throw new UserNotFoundException(String.format("User %d does not exist", userId));
         }
