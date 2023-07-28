@@ -30,12 +30,13 @@ public class CompilationServiceImpl implements CompilationService {
 
     @Transactional
     @Override
-    public CompilationDto addCompilation(NewCompilationDto newCompilationDto) {
+    public CompilationDto createNewCompilation(NewCompilationDto newCompilationDto) {
+
         Compilation compilation = CompilationMapper.mapDtoToModel(newCompilationDto);
 
         if (newCompilationDto.getEvents() != null) {
-            List<Event> eventsToBeCompiled = eventRepo.findAllById(newCompilationDto.getEvents());
-            compilation.setEvents(new HashSet<>(eventsToBeCompiled));
+            List<Event> events = eventRepo.findAllById(newCompilationDto.getEvents());
+            compilation.setEvents(new HashSet<>(events));
         } else {
             compilation.setEvents(new HashSet<>());
         }
@@ -43,67 +44,71 @@ public class CompilationServiceImpl implements CompilationService {
         return CompilationMapper.mapModelToDto(compilationRepo.save(compilation), statsClient);
     }
 
+    @Transactional
     @Override
-    public List<CompilationDto> getAllCompilations(Optional<Boolean> pinned, int from, int size) {
-        Pageable request = makePageRequest(from, size);
+    public List<CompilationDto> getAllCompilations(Optional<Boolean> pinned, Pageable pageable) {
+
         List<Compilation> compilations;
 
         if (pinned.isEmpty()) {
-            compilations = compilationRepo.findAll(request).getContent();
+            compilations = compilationRepo.findAll(pageable).getContent();
         } else {
             compilations = compilationRepo.findAllByPinned(pinned.get());
         }
 
         return compilations
                 .stream()
-                .map(c -> CompilationMapper.mapModelToDto(c, statsClient))
+                .map(compilation -> CompilationMapper.mapModelToDto(compilation, statsClient))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public CompilationDto getCompilationById(Long compId) {
-        Compilation compilation = compilationRepo.findById(compId).orElseThrow(
-                () -> new CompilationNotFoundException(String.format("Compilation %d does not exist", compId)));
+    public CompilationDto getCompilationById(Long compilationId) {
+
+        Compilation compilation = compilationRepo.findById(compilationId)
+                .orElseThrow(() -> new CompilationNotFoundException(String.format("Compilation %d does not exist", compilationId)));
+
         return CompilationMapper.mapModelToDto(compilation, statsClient);
     }
 
-
     @Transactional
     @Override
-    public CompilationDto updateCompilation(Long compId, UpdateCompilationRequest updateCompilationRequest) {
-        Compilation toBeUpdated = compilationRepo.findById(compId).orElseThrow(
-                () -> new CompilationNotFoundException(String.format("Compilation %d does not exist", compId)));
-        updateEvents(toBeUpdated, updateCompilationRequest);
-        updatePinned(toBeUpdated, updateCompilationRequest);
-        updateTitle(toBeUpdated, updateCompilationRequest);
-        return CompilationMapper.mapModelToDto(compilationRepo.save(toBeUpdated), statsClient);
+    public CompilationDto updateCompilationById(Long compilationId, UpdateCompilationRequest updateCompilationRequest) {
+
+        Compilation compilation = compilationRepo.findById(compilationId)
+                .orElseThrow(() -> new CompilationNotFoundException(String.format("Compilation %d does not exist", compilationId)));
+        updateEvents(compilation, updateCompilationRequest);
+        updatePinned(compilation, updateCompilationRequest);
+        updateTitle(compilation, updateCompilationRequest);
+
+        return CompilationMapper.mapModelToDto(compilationRepo.save(compilation), statsClient);
     }
 
     @Override
-    public void deleteCompilation(Long compId) {
-        compilationRepo.deleteById(compId);
-    }
+    public void deleteCompilationById(Long compilationId) {
 
-    private Pageable makePageRequest(int from, int size) {
-        return PageRequest.of(from > 0 ? from / size : 0, size);
+        compilationRepo.deleteById(compilationId);
     }
 
     private void updateTitle(Compilation compilation, UpdateCompilationRequest updateCompilationRequest) {
+
         if (updateCompilationRequest.getTitle() != null) {
             compilation.setTitle(updateCompilationRequest.getTitle());
         }
     }
 
     private void updatePinned(Compilation compilation, UpdateCompilationRequest updateCompilationRequest) {
+
         if (updateCompilationRequest.getPinned() != null) {
             compilation.setPinned(updateCompilationRequest.getPinned());
         }
     }
 
     private void updateEvents(Compilation compilation, UpdateCompilationRequest updateCompilationRequest) {
+
         if (updateCompilationRequest.getEvents() != null) {
-            List<Event> eventsToBeUpdated = eventRepo.findAllById(updateCompilationRequest.getEvents());
-            compilation.setEvents(new HashSet<>(eventsToBeUpdated));
+            List<Event> events = eventRepo.findAllById(updateCompilationRequest.getEvents());
+            compilation.setEvents(new HashSet<>(events));
         }
     }
 }

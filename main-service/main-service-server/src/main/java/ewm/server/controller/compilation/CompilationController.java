@@ -5,6 +5,8 @@ import ewm.server.dto.compilation.NewCompilationDto;
 import ewm.server.dto.compilation.UpdateCompilationRequest;
 import ewm.server.service.compilation.CompilationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,13 +28,13 @@ public class CompilationController {
 
     @PostMapping(value = COMPILATIONS_ADMIN_PATH)
     public ResponseEntity<CompilationDto> addCompilation(@Valid @RequestBody NewCompilationDto newCompilationDto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(compilationService.addCompilation(newCompilationDto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(compilationService.createNewCompilation(newCompilationDto));
     }
 
     @PatchMapping(value = COMPILATIONS_ADMIN_PATH + "/{compId}")
     public ResponseEntity<CompilationDto> updateCompilation(@PathVariable("compId") Long compId,
                                                             @Valid @RequestBody UpdateCompilationRequest updateCompilationRequest) {
-        return ResponseEntity.ok().body(compilationService.updateCompilation(compId, updateCompilationRequest));
+        return ResponseEntity.ok().body(compilationService.updateCompilationById(compId, updateCompilationRequest));
     }
 
     @GetMapping(COMPILATIONS_PUBLIC_PATH + "/{compId}")
@@ -44,12 +46,15 @@ public class CompilationController {
     public ResponseEntity<List<CompilationDto>> getAllCompilations(@RequestParam(name = "pinned", required = false) Optional<Boolean> pinned,
                                                                    @RequestParam(name = "from", required = false, defaultValue = "0") int from,
                                                                    @RequestParam(name = "size", required = false, defaultValue = "10") int size) {
-        return ResponseEntity.ok().body(compilationService.getAllCompilations(pinned, from, size));
+
+        Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size);
+
+        return ResponseEntity.ok().body(compilationService.getAllCompilations(pinned, pageable));
     }
 
     @DeleteMapping(COMPILATIONS_ADMIN_PATH + "/{compId}")
     public ResponseEntity<Void> deleteCompilation(@PathVariable("compId") Long compId) {
-        compilationService.deleteCompilation(compId);
+        compilationService.deleteCompilationById(compId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
