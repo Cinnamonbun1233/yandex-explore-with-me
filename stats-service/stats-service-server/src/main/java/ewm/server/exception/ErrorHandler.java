@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleIllegalDatesException(IllegalDatesException exception) {
-        return new ErrorResponse(exception.getMessage());
+    public ErrorResponse handleIllegalDatesException(IllegalDatesException illegalDatesException) {
+
+        return new ErrorResponse(illegalDatesException.getMessage());
     }
 }
