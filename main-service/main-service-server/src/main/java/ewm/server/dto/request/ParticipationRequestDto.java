@@ -1,6 +1,5 @@
 package ewm.server.dto.request;
 
-import ewm.server.model.request.RequestStatus;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
