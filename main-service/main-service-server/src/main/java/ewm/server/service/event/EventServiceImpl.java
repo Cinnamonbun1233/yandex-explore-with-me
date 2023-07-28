@@ -405,7 +405,7 @@ public class EventServiceImpl implements EventService {
 
     private Location saveLocation(LocationDto locationDto) {
 
-        return locationRepo.save(LocationMapper.mapDtoToModel(locationDto));
+        return locationRepo.save(LocationMapper.locationDtoToLocation(locationDto));
     }
 
     private Category getCategory(Integer categoryId) {

@@ -73,7 +73,7 @@ public class EventMapper {
                 .title(event.getTitle())
                 .views(GET_VIEWS_OF_EVENT_FUNC.apply(event.getEventId(), statsClient))
                 .initiator(UserMapper.mapModelToShortDto(event.getInitiator()))
-                .location(LocationMapper.mapModelToDto(event.getLocation()))
+                .location(LocationMapper.locationToLocationDto(event.getLocation()))
                 .participantLimit(event.getParticipationLimit())
                 .publishedOn(event.getPublishedOn() == null ? "" : event.getPublishedOn().format(DATE_TIME_FORMAT))
                 .requestModeration(event.getRequestModeration())
