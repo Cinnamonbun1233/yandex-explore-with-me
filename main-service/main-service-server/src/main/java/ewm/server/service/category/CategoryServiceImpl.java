@@ -23,7 +23,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryDto createNewCategory(NewCategoryDto newCategoryDto) {
 
-        return CategoryMapper.mapModelToDto(categoryRepo.save(CategoryMapper.mapDtoToModel(newCategoryDto)));
+        return CategoryMapper.categoryToCategoryDto(categoryRepo.save(CategoryMapper.newCategoryDtoToCategory(newCategoryDto)));
     }
 
     @Transactional
@@ -34,7 +34,7 @@ public class CategoryServiceImpl implements CategoryService {
                 .findAll(pageable)
                 .getContent()
                 .stream()
-                .map(CategoryMapper::mapModelToDto)
+                .map(CategoryMapper::categoryToCategoryDto)
                 .collect(Collectors.toList());
     }
 
@@ -44,7 +44,7 @@ public class CategoryServiceImpl implements CategoryService {
 
         checkIfCategoryExists(categoryId);
 
-        return CategoryMapper.mapModelToDto(categoryRepo.findById(categoryId).orElseThrow());
+        return CategoryMapper.categoryToCategoryDto(categoryRepo.findById(categoryId).orElseThrow());
     }
 
     @Transactional
@@ -55,7 +55,7 @@ public class CategoryServiceImpl implements CategoryService {
                 .orElseThrow(() -> new CategoryNotFoundException(String.format("Category %d does not exist", categoryId)));
         category.setName(categoryDto.getName());
 
-        return CategoryMapper.mapModelToDto(categoryRepo.save(category));
+        return CategoryMapper.categoryToCategoryDto(categoryRepo.save(category));
     }
 
     @Transactional

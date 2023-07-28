@@ -31,7 +31,7 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     public CompilationDto createNewCompilation(NewCompilationDto newCompilationDto) {
 
-        Compilation compilation = CompilationMapper.mapDtoToModel(newCompilationDto);
+        Compilation compilation = CompilationMapper.newCompilationDtoToCompilation(newCompilationDto);
 
         if (newCompilationDto.getEvents() != null) {
             List<Event> events = eventRepo.findAllById(newCompilationDto.getEvents());
@@ -40,7 +40,7 @@ public class CompilationServiceImpl implements CompilationService {
             compilation.setEvents(new HashSet<>());
         }
 
-        return CompilationMapper.mapModelToDto(compilationRepo.save(compilation), statsClient);
+        return CompilationMapper.compilationToCompilationDto(compilationRepo.save(compilation), statsClient);
     }
 
     @Transactional
@@ -57,7 +57,7 @@ public class CompilationServiceImpl implements CompilationService {
 
         return compilations
                 .stream()
-                .map(compilation -> CompilationMapper.mapModelToDto(compilation, statsClient))
+                .map(compilation -> CompilationMapper.compilationToCompilationDto(compilation, statsClient))
                 .collect(Collectors.toList());
     }
 
@@ -68,7 +68,7 @@ public class CompilationServiceImpl implements CompilationService {
         Compilation compilation = compilationRepo.findById(compilationId)
                 .orElseThrow(() -> new CompilationNotFoundException(String.format("Compilation %d does not exist", compilationId)));
 
-        return CompilationMapper.mapModelToDto(compilation, statsClient);
+        return CompilationMapper.compilationToCompilationDto(compilation, statsClient);
     }
 
     @Transactional
@@ -81,7 +81,7 @@ public class CompilationServiceImpl implements CompilationService {
         updatePinned(compilation, updateCompilationRequest);
         updateTitle(compilation, updateCompilationRequest);
 
-        return CompilationMapper.mapModelToDto(compilationRepo.save(compilation), statsClient);
+        return CompilationMapper.compilationToCompilationDto(compilationRepo.save(compilation), statsClient);
     }
 
     @Transactional

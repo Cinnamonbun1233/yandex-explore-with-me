@@ -5,13 +5,17 @@ import ewm.server.dto.category.NewCategoryDto;
 import ewm.server.model.category.Category;
 
 public class CategoryMapper {
-    public static Category mapDtoToModel(NewCategoryDto newCategoryDto) {
+    public static Category newCategoryDtoToCategory(NewCategoryDto newCategoryDto) {
+
         Category category = new Category();
+
         category.setName(newCategoryDto.getName());
+
         return category;
     }
 
-    public static CategoryDto mapModelToDto(Category category) {
+    public static CategoryDto categoryToCategoryDto(Category category) {
+
         return CategoryDto
                 .builder()
                 .id(category.getCategoryId())
