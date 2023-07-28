@@ -61,6 +61,7 @@ public class CompilationServiceImpl implements CompilationService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     @Override
     public CompilationDto getCompilationById(Long compilationId) {
 
@@ -83,6 +84,7 @@ public class CompilationServiceImpl implements CompilationService {
         return CompilationMapper.mapModelToDto(compilationRepo.save(compilation), statsClient);
     }
 
+    @Transactional
     @Override
     public void deleteCompilationById(Long compilationId) {
 

@@ -25,7 +25,7 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<UserDto> addUser(@Valid @RequestBody NewUserRequest newUserRequest) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.addUser(newUserRequest));
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.createNewUser(newUserRequest));
     }
 
     @GetMapping
@@ -33,7 +33,7 @@ public class UserController {
                                                   @RequestParam(required = false, defaultValue = "0") Integer from,
                                                   @RequestParam(required = false, defaultValue = "10") Integer size) {
         Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size);
-        return ResponseEntity.ok().body(userService.getUsers(ids, pageable));
+        return ResponseEntity.ok().body(userService.getAllUsers(ids, pageable));
     }
 
     @DeleteMapping("/{userId}")

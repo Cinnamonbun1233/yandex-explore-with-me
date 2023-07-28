@@ -20,11 +20,20 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public UserDto addUser(NewUserRequest newUserRequest) {
+    public UserDto createNewUser(NewUserRequest newUserRequest) {
+
         return UserMapper.mapModelToDto(userRepo.save(UserMapper.mapDtoToModel(newUserRequest)));
     }
 
+    @Transactional
+    @Override
+    public List<UserDto> getAllUsers(List<Long> ids, Pageable pageable) {
+
+        return ids == null ? getAllUsers(pageable) : getUsersByIds(ids, pageable);
+    }
+
     private List<UserDto> getAllUsers(Pageable pageable) {
+
         return userRepo
                 .findAll(pageable)
                 .getContent()
@@ -33,23 +42,27 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public List<UserDto> getUsers(List<Long> ids, Pageable pageable) {
-        return ids == null ? getAllUsers(pageable) : getUsersByIds(ids, pageable);
-    }
-
     private List<UserDto> getUsersByIds(List<Long> ids, Pageable pageable) {
-        return userRepo.findAllByUserIdIn(ids, pageable).getContent().stream()
-                .map(UserMapper::mapModelToDto).collect(Collectors.toList());
+
+        return userRepo
+                .findAllByUserIdIn(ids, pageable)
+                .getContent()
+                .stream()
+                .map(UserMapper::mapModelToDto)
+                .collect(Collectors.toList());
     }
 
+    @Transactional
     @Override
     public void deleteUserById(Long userId) {
+
         checkIfUserExists(userId);
+
         userRepo.deleteById(userId);
     }
 
     private void checkIfUserExists(Long userId) {
+
         if (userRepo.findById(userId).isEmpty()) {
             throw new UserNotFoundException(String.format("User %d not found", userId));
         }

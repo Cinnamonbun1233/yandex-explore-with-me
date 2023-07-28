@@ -38,6 +38,7 @@ public class CategoryServiceImpl implements CategoryService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     @Override
     public CategoryDto getCategoryById(Long categoryId) {
 
@@ -57,6 +58,7 @@ public class CategoryServiceImpl implements CategoryService {
         return CategoryMapper.mapModelToDto(categoryRepo.save(category));
     }
 
+    @Transactional
     @Override
     public void deleteCategoryById(Long categoryId) {
 
