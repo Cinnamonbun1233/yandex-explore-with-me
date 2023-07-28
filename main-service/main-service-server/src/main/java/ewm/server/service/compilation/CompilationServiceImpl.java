@@ -11,7 +11,6 @@ import ewm.server.model.event.Event;
 import ewm.server.repo.compilation.CompilationRepo;
 import ewm.server.repo.event.EventRepo;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
