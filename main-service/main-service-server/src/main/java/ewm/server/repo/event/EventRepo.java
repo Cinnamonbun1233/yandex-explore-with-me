@@ -14,8 +14,8 @@ import java.util.Optional;
 public interface EventRepo extends JpaRepository<Event, Long>, QuerydslPredicateExecutor<Event> {
     Optional<Event> findByEventIdAndEventStatus(Long eventId, EventStatus eventStatus);
 
-    @Query(value = "select * from events as e " +
-                   "join locations as l on e.location_id = l.location_id " +
-                   "where distance(l.lat, l.lon, :lat, :lon) < :radius", nativeQuery = true)
+    @Query(value = "SELECT * FROM events AS e " +
+                   "JOIN locations AS l ON e.location_id = l.location_id " +
+                   "WHERE distance(l.lat, l.lon, :lat, :lon) < :radius", nativeQuery = true)
     List<Event> findEventsNearby(Double lon, Double lat, Double radius);
 }

@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 public class AppConfig {
     @Bean
     public StatsClient getStatsClient() {
+
         return new StatsClient();
     }
 }

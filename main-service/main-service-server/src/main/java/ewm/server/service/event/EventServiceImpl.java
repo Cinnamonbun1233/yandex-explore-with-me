@@ -188,11 +188,11 @@ public class EventServiceImpl implements EventService {
 
         return EventRequestStatusUpdateResult
                 .builder()
-                .confirmedRequests(requestRepo.findAllByRequestStatusAndEvent_EventId(RequestStatus.CONFIRMED, eventId)
+                .confirmedRequests(requestRepo.findAllByRequestStatusAndEventEventId(RequestStatus.CONFIRMED, eventId)
                         .stream()
                         .map(RequestMapper::mapModelToDto)
                         .collect(Collectors.toList()))
-                .rejectedRequests(requestRepo.findAllByRequestStatusAndEvent_EventId(RequestStatus.REJECTED, eventId)
+                .rejectedRequests(requestRepo.findAllByRequestStatusAndEventEventId(RequestStatus.REJECTED, eventId)
                         .stream()
                         .map(RequestMapper::mapModelToDto)
                         .collect(Collectors.toList()))

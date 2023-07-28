@@ -107,7 +107,7 @@ public class RequestServiceImpl implements RequestService {
     }
 
     private void checkIfRequestWasAlreadyCreated(Long userId, Long eventId) {
-        if (requestRepo.findByRequester_UserIdAndEvent_EventId(userId, eventId).isPresent()) {
+        if (requestRepo.findByRequesterUserIdAndEventEventId(userId, eventId).isPresent()) {
             throw new IllegalRequestException("Request was already created");
         }
     }
