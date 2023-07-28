@@ -38,9 +38,9 @@ public class PlaceServiceImpl implements PlaceService {
     @Override
     public PlaceDto createNewPlace(PlaceDto placeDto) {
 
-        Place place = PlaceMapper.placeDtoToPlace(placeDto);
+        Place place = PlaceMapper.mapDtoToModel(placeDto);
 
-        return PlaceMapper.placeToPlaceDto(placeRepo.save(place));
+        return PlaceMapper.mapModelToDto(placeRepo.save(place));
     }
 
     @Transactional
@@ -50,7 +50,7 @@ public class PlaceServiceImpl implements PlaceService {
         return placeRepo
                 .findAll()
                 .stream()
-                .map(PlaceMapper::placeToPlaceDto)
+                .map(PlaceMapper::mapModelToDto)
                 .collect(Collectors.toList());
     }
 

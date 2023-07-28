@@ -4,27 +4,22 @@ import ewm.server.dto.place.PlaceDto;
 import ewm.server.model.place.Place;
 
 public class PlaceMapper {
-    public static Place placeDtoToPlace(PlaceDto placeDto) {
-
+    public static Place mapDtoToModel(PlaceDto dto) {
         Place place = new Place();
-
-        place.setName(placeDto.getName());
-        place.setLatitude(placeDto.getLatitude());
-        place.setLongitude(placeDto.getLongitude());
-        place.setRadius(placeDto.getRadius());
-
+        place.setName(dto.getName());
+        place.setLatitude(dto.getLatitude());
+        place.setLongitude(dto.getLongitude());
+        place.setRadius(dto.getRadius());
         return place;
     }
 
-    public static PlaceDto placeToPlaceDto(Place place) {
-
-        return PlaceDto
-                .builder()
-                .placeId(place.getPlaceId())
-                .name(place.getName())
-                .latitude(place.getLatitude())
-                .longitude(place.getLongitude())
-                .radius(place.getRadius())
+    public static PlaceDto mapModelToDto(Place model) {
+        return PlaceDto.builder()
+                .placeId(model.getPlaceId())
+                .name(model.getName())
+                .latitude(model.getLatitude())
+                .longitude(model.getLongitude())
+                .radius(model.getRadius())
                 .build();
     }
 }

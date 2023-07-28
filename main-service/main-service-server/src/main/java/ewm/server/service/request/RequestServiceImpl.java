@@ -59,7 +59,7 @@ public class RequestServiceImpl implements RequestService {
 
         participationRequest.setCreated(LocalDateTime.now());
 
-        return RequestMapper.participationRequestToParticipationRequestDto(requestRepo.save(participationRequest));
+        return RequestMapper.mapModelToDto(requestRepo.save(participationRequest));
     }
 
     @Transactional
@@ -71,7 +71,7 @@ public class RequestServiceImpl implements RequestService {
 
         return StreamSupport
                 .stream(requestRepo.findAll(booleanExpression).spliterator(), false)
-                .map(RequestMapper::participationRequestToParticipationRequestDto)
+                .map(RequestMapper::mapModelToDto)
                 .collect(Collectors.toList());
     }
 
@@ -86,7 +86,7 @@ public class RequestServiceImpl implements RequestService {
 
         participationRequest.setRequestStatus(RequestStatus.CANCELED);
 
-        return RequestMapper.participationRequestToParticipationRequestDto(requestRepo.save(participationRequest));
+        return RequestMapper.mapModelToDto(requestRepo.save(participationRequest));
     }
 
     private void checkIfUserExists(Long userId) {

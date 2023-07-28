@@ -102,7 +102,7 @@ public class EventServiceImpl implements EventService {
         return event
                 .getRequests()
                 .stream()
-                .map(RequestMapper::participationRequestToParticipationRequestDto)
+                .map(RequestMapper::mapModelToDto)
                 .collect(Collectors.toList());
     }
 
@@ -230,11 +230,11 @@ public class EventServiceImpl implements EventService {
                 .builder()
                 .confirmedRequests(requestRepo.findAllByRequestStatusAndEventEventId(RequestStatus.CONFIRMED, eventId)
                         .stream()
-                        .map(RequestMapper::participationRequestToParticipationRequestDto)
+                        .map(RequestMapper::mapModelToDto)
                         .collect(Collectors.toList()))
                 .rejectedRequests(requestRepo.findAllByRequestStatusAndEventEventId(RequestStatus.REJECTED, eventId)
                         .stream()
-                        .map(RequestMapper::participationRequestToParticipationRequestDto)
+                        .map(RequestMapper::mapModelToDto)
                         .collect(Collectors.toList()))
                 .build();
     }
@@ -405,7 +405,7 @@ public class EventServiceImpl implements EventService {
 
     private Location saveLocation(LocationDto locationDto) {
 
-        return locationRepo.save(LocationMapper.locationDtoToLocation(locationDto));
+        return locationRepo.save(LocationMapper.mapDtoToModel(locationDto));
     }
 
     private Category getCategory(Integer categoryId) {
