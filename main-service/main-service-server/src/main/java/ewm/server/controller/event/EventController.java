@@ -7,6 +7,8 @@ import ewm.server.dto.request.ParticipationRequestDto;
 import ewm.server.service.event.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +38,7 @@ public class EventController {
     @PostMapping(value = EVENT_PRIVATE_PATH)
     public ResponseEntity<EventFullDto> addEvent(@PathVariable("userId") Long userId,
                                                  @Valid @RequestBody NewEventDto newEventDto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(eventService.addEvent(userId, newEventDto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(eventService.createNewEvent(userId, newEventDto));
     }
 
     @PatchMapping(value = EVENT_ADMIN_PATH + "/{eventId}")
@@ -60,15 +62,21 @@ public class EventController {
                                                                 @RequestParam(name = "rangeEnd", required = false) Optional<String> rangeEnd,
                                                                 @RequestParam(name = "from", required = false, defaultValue = "0") int from,
                                                                 @RequestParam(name = "size", required = false, defaultValue = "10") int size) {
+
+        Pageable request = PageRequest.of(from > 0 ? from / size : 0, size);
+
         return ResponseEntity.ok().body(eventService.searchEventsAdmin(users, states, categories, rangeStart, rangeEnd,
-                from, size));
+                request));
     }
 
     @GetMapping(EVENT_PRIVATE_PATH)
     public ResponseEntity<List<EventShortDto>> getAllUsersEventsPrivate(@PathVariable("userId") Long userId,
                                                                         @RequestParam(name = "from", required = false, defaultValue = "0") int from,
                                                                         @RequestParam(name = "size", required = false, defaultValue = "10") int size) {
-        return ResponseEntity.ok().body(eventService.getAllUsersEvents(userId, from, size));
+
+        Pageable request = PageRequest.of(from > 0 ? from / size : 0, size);
+
+        return ResponseEntity.ok().body(eventService.getAllUsersEvents(userId, request));
     }
 
     @GetMapping(EVENT_PUBLIC_PATH)
@@ -82,6 +90,8 @@ public class EventController {
                                                                   @RequestParam(name = "from", required = false, defaultValue = "0") int from,
                                                                   @RequestParam(name = "size", required = false, defaultValue = "10") int size) {
 
+        Pageable request = PageRequest.of(from > 0 ? from / size : 0, size);
+
         statsClient.createNewRecord(StatsRequestDto.builder()
                 .uri("/events")
                 .app("ewm-main-service")
@@ -89,7 +99,7 @@ public class EventController {
                 .build()).block();
 
         return ResponseEntity.ok().body(eventService.searchEventsPublic(text, categories, paid, rangeStart, rangeEnd,
-                onlyAvailable, sort, from, size));
+                onlyAvailable, sort, request));
     }
 
     @GetMapping(EVENT_PUBLIC_PATH + "/{id}")
