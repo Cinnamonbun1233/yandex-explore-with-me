@@ -82,7 +82,7 @@ public class EventController {
                                                                   @RequestParam(name = "from", required = false, defaultValue = "0") int from,
                                                                   @RequestParam(name = "size", required = false, defaultValue = "10") int size) {
 
-        statsClient.saveRecord(StatsRequestDto.builder()
+        statsClient.createNewRecord(StatsRequestDto.builder()
                 .uri("/events")
                 .app("ewm-main-service")
                 .timestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern(dateTimePattern)))
@@ -95,7 +95,7 @@ public class EventController {
     @GetMapping(EVENT_PUBLIC_PATH + "/{id}")
     public ResponseEntity<EventFullDto> getEventByIdPublic(@PathVariable("id") Long id) {
 
-        statsClient.saveRecord(StatsRequestDto.builder()
+        statsClient.createNewRecord(StatsRequestDto.builder()
                         .uri(String.format("/events/%d", id))
                         .app("ewm-main-service")
                         .timestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern(dateTimePattern)))

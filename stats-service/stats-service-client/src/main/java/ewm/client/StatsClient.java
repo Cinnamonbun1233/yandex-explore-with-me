@@ -15,7 +15,8 @@ public class StatsClient {
     private static final String BASE_URL = "stats-server:9090";
     private final WebClient webClient = WebClient.create();
 
-    public Mono<Void> saveRecord(StatsRequestDto statsRequestDto) {
+    public Mono<Void> createNewRecord(StatsRequestDto statsRequestDto) {
+
         return webClient
                 .post()
                 .uri(String.format("%s/hit", BASE_URL))
@@ -24,38 +25,43 @@ public class StatsClient {
                 .bodyToMono(Void.class);
     }
 
-    public Flux<StatsResponseDto> getStats(String start, String end, List<String> uris, Boolean unique) {
+    public Flux<StatsResponseDto> getStats(String startPeriod, String endPeriod, List<String> uris, Boolean unique) {
+
         if (uris == null) {
-            return getStatsWithoutUri(start, end, unique);
+            return getStatsWithoutUri(startPeriod, endPeriod, unique);
         } else {
-            return getStatsWithUri(start, end, uris, unique);
+            return getStatsWithUri(startPeriod, endPeriod, uris, unique);
         }
     }
 
-    private Flux<StatsResponseDto> getStatsWithUri(String start, String end, List<String> uris, Boolean unique) {
-        Optional<Boolean> uniqueOpt = Optional.ofNullable(unique);
+    private Flux<StatsResponseDto> getStatsWithoutUri(String startPeriod, String endPeriod, Boolean unique) {
+
+        Optional<Boolean> uniqueOptional = Optional.ofNullable(unique);
+
         return webClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
                         .path(String.format("%s/stats", BASE_URL))
-                        .queryParam("start", start)
-                        .queryParam("end", end)
-                        .queryParam("uris", uris)
-                        .queryParamIfPresent("unique", uniqueOpt)
+                        .queryParam("start", startPeriod)
+                        .queryParam("end", endPeriod)
+                        .queryParamIfPresent("unique", uniqueOptional)
                         .build())
                 .retrieve()
                 .bodyToFlux(StatsResponseDto.class);
     }
 
-    private Flux<StatsResponseDto> getStatsWithoutUri(String start, String end, Boolean unique) {
-        Optional<Boolean> uniqueOpt = Optional.ofNullable(unique);
+    private Flux<StatsResponseDto> getStatsWithUri(String startPeriod, String endPeriod, List<String> uris, Boolean unique) {
+
+        Optional<Boolean> uniqueOptional = Optional.ofNullable(unique);
+
         return webClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
                         .path(String.format("%s/stats", BASE_URL))
-                        .queryParam("start", start)
-                        .queryParam("end", end)
-                        .queryParamIfPresent("unique", uniqueOpt)
+                        .queryParam("start", startPeriod)
+                        .queryParam("end", endPeriod)
+                        .queryParam("uris", uris)
+                        .queryParamIfPresent("unique", uniqueOptional)
                         .build())
                 .retrieve()
                 .bodyToFlux(StatsResponseDto.class);
