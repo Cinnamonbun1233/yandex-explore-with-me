@@ -16,7 +16,7 @@ public class RequestMapper {
                 .created(participationRequest.getCreated().format(DATE_TIME_FORMAT))
                 .requester(participationRequest.getRequester().getUserId())
                 .event(participationRequest.getEvent().getEventId())
-                .requestStatus(participationRequest.getRequestStatus())
+                .status(participationRequest.getRequestStatus().toString())
                 .build();
     }
 }
