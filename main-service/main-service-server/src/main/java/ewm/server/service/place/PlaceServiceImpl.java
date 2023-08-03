@@ -34,7 +34,6 @@ public class PlaceServiceImpl implements PlaceService {
     private final EventRepo eventRepo;
     private final StatsClient statsClient;
 
-    @Transactional
     @Override
     public PlaceDto createNewPlace(PlaceDto placeDto) {
 
