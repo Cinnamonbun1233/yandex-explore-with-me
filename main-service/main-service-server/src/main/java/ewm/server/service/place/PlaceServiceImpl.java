@@ -28,14 +28,13 @@ import java.util.stream.Collectors;
         level = AccessLevel.PRIVATE,
         makeFinal = true
 )
-@Transactional(readOnly = true)
 public class PlaceServiceImpl implements PlaceService {
     private final UserRepo userRepo;
     private final PlaceRepo placeRepo;
     private final EventRepo eventRepo;
     private final StatsClient statsClient;
 
-
+    @Transactional
     @Override
     public PlaceDto createNewPlace(PlaceDto placeDto) {
 
@@ -44,6 +43,7 @@ public class PlaceServiceImpl implements PlaceService {
         return PlaceMapper.placeToPlaceDto(placeRepo.save(place));
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<PlaceDto> getAllPlaces() {
 
@@ -54,6 +54,7 @@ public class PlaceServiceImpl implements PlaceService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     @Override
     public List<EventShortDto> getEventsNearbyPlace(Long placeId) {
 
@@ -68,6 +69,7 @@ public class PlaceServiceImpl implements PlaceService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     @Override
     public List<EventShortDto> getEventsNearbyUsersLocation(Long userId, LocationDto locationDto, Long radius) {
 
