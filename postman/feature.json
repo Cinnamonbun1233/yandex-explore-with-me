@@ -1,0 +1,236 @@
+{
+  "info": {
+    "_postman_id": "10f0cef8-2003-4969-a639-aa61e4e96728",
+    "name": "feature_location_processing",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "24857127"
+  },
+  "item": [
+    {
+      "name": "Create new location #1",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Response has status 201\", function() {\r",
+              "    pm.expect(pm.response.code).to.equal(201);\r",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"Рюмочная 'Пролив'\",\r\n    \"latitude\": 55.755,\r\n    \"longitude\": 37.600,\r\n    \"radius\": 1\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/admin/places",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "admin",
+            "places"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create new location #2",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Response has status 201\", function() {\r",
+              "    pm.expect(pm.response.code).to.equal(201);\r",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"Бар 'Панк Фикшн'\",\r\n    \"latitude\": 55.774,\r\n    \"longitude\": 37.671,\r\n    \"radius\": 1\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/admin/places",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "admin",
+            "places"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get all locations",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const body = pm.response.json();\r",
+              "pm.test(\"Response has status 200 and contains 2 elements\", function() {\r",
+              "    pm.response.to.be.ok;\r",
+              "    pm.expect(body).is.an('array');\r",
+              "    pm.expect(body.length).to.be.eq(2);\r",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/admin/places",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "admin",
+            "places"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get all events nearby location #1",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const body = pm.response.json();\r",
+              "pm.test(\"Response has status 200 and contains 1 elements\", function() {\r",
+              "    pm.response.to.be.ok;\r",
+              "    pm.expect(body).is.an('array');\r",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/places/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "places",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get all events nearby user",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const body = pm.response.json();\r",
+              "pm.test(\"Response has status 200 and contains 0 elements\", function() {\r",
+              "    pm.response.to.be.ok;\r",
+              "    pm.expect(body).is.an('array');\r",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"lon\": 55.751,\r\n    \"lat\": 37.618\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/users/1/places",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "users",
+            "1",
+            "places"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.test(\"Response containts json-body\", function() {",
+          "    pm.response.to.be.withBody;",
+          "    pm.response.to.be.json;",
+          "});"
+        ]
+      }
+    }
+  ]
+}

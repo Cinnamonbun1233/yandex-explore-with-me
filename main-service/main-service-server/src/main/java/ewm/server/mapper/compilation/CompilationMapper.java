@@ -9,14 +9,18 @@ import ewm.server.model.compilation.Compilation;
 import java.util.stream.Collectors;
 
 public class CompilationMapper {
-    public static Compilation mapDtoToModel(NewCompilationDto newCompilationDto) {
+    public static Compilation newCompilationDtoToCompilation(NewCompilationDto newCompilationDto) {
+
         Compilation compilation = new Compilation();
+
         compilation.setPinned(newCompilationDto.getPinned() != null && newCompilationDto.getPinned());
         compilation.setTitle(newCompilationDto.getTitle());
+
         return compilation;
     }
 
-    public static CompilationDto mapModelToDto(Compilation compilation, StatsClient statsClient) {
+    public static CompilationDto compilationToCompilationDto(Compilation compilation, StatsClient statsClient) {
+
         return CompilationDto
                 .builder()
                 .id(compilation.getCompilationId())
@@ -25,7 +29,7 @@ public class CompilationMapper {
                 .events(compilation
                         .getEvents()
                         .stream()
-                        .map(e -> EventMapper.mapModelToShortDto(e, statsClient))
+                        .map(event -> EventMapper.eventToEventShortDto(event, statsClient))
                         .collect(Collectors.toList()))
                 .build();
     }

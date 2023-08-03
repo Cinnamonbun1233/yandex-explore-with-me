@@ -26,28 +26,33 @@ public class StatsServiceImpl implements StatsService {
 
     @Override
     @Transactional
-    public void saveRecord(StatsRequestDto statsRequestDto, HttpServletRequest httpServletRequest) {
+    public void createNewRecord(StatsRequestDto statsRequestDto, HttpServletRequest httpServletRequest) {
+
         statsRequestDto.setIp(httpServletRequest.getRemoteAddr());
-        statsRepo.save(StatsMapper.mapRequestToModel(statsRequestDto));
+        statsRepo.save(StatsMapper.statsRequestDtoToStatsRecord(statsRequestDto));
     }
 
     @Override
-    public List<StatsResponseDto> getStats(String start, String end, List<String> uris, Boolean unique) {
-        validateDates(start, end);
+    public List<StatsResponseDto> getStats(String startPeriod, String endPeriod, List<String> uris, Boolean unique) {
+
+        validateDates(startPeriod, endPeriod);
+
         if (Boolean.TRUE.equals(unique)) {
-            return statsRepo.getStatsForDatesAndUrisWithUniqueIp(parseDateTime(start), parseDateTime(end), uris);
+            return statsRepo.getStatsForDatesAndUrisWithUniqueIp(parseDateTime(startPeriod), parseDateTime(endPeriod), uris);
         } else {
-            return statsRepo.getStatsForDatesAndUris(parseDateTime(start), parseDateTime(end), uris);
+            return statsRepo.getStatsForDatesAndUris(parseDateTime(startPeriod), parseDateTime(endPeriod), uris);
         }
     }
 
-    private void validateDates(String start, String end) {
-        if (parseDateTime(start).isAfter(parseDateTime(end))) {
+    private void validateDates(String startPeriod, String endPeriod) {
+
+        if (parseDateTime(startPeriod).isAfter(parseDateTime(endPeriod))) {
             throw new IllegalDatesException("Illegal dates");
         }
     }
 
     private LocalDateTime parseDateTime(String dateTime) {
+
         return LocalDateTime.parse(dateTime, REQUEST_TIME_FORMAT);
     }
 }

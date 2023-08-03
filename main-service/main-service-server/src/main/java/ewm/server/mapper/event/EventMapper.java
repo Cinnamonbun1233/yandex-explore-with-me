@@ -22,7 +22,11 @@ public class EventMapper {
     private static final Function<List<ParticipationRequest>, Integer> CALCULATE_CONFIRMED_REQUEST_FUNC =
             list -> list == null || list.isEmpty() ? 0 : (int) list
                     .stream()
-                    .filter(r -> r.getRequestStatus().equals(RequestStatus.CONFIRMED))
+                    .filter(
+                            participationRequest -> participationRequest
+                                    .getRequestStatus()
+                                    .equals(RequestStatus.CONFIRMED)
+                    )
                     .count();
     private static final BiFunction<Long, StatsClient, Integer> GET_VIEWS_OF_EVENT_FUNC =
             (id, statsClient) -> {
@@ -30,15 +34,18 @@ public class EventMapper {
                         .getStats(
                                 "2000-01-01 00:00:00",
                                 "2100-01-01 00:00:00",
-                                List.of(new String[]{String.format("/events/%d", id)}),
+                                List.of(String.format("/events/%d", id)),
                                 Boolean.valueOf("true")
                         )
                         .blockFirst();
+
                 return statsResponseDto == null ? 0 : statsResponseDto.getHits().intValue();
             };
 
-    public static Event mapDtoToModel(NewEventDto newEventDto) {
+    public static Event newEventDtoToEvent(NewEventDto newEventDto) {
+
         Event event = new Event();
+
         event.setAnnotation(newEventDto.getAnnotation());
         event.setDescription(newEventDto.getDescription());
         event.setPaid(newEventDto.getPaid() != null && newEventDto.getPaid());
@@ -46,16 +53,18 @@ public class EventMapper {
         event.setParticipationLimit(newEventDto.getParticipantLimit() == null ? 0 : newEventDto.getParticipantLimit());
         event.setRequestModeration(newEventDto.getRequestModeration() == null || newEventDto.getRequestModeration());
         event.setTitle(newEventDto.getTitle());
+
         return event;
     }
 
-    public static EventFullDto mapModelToFullDto(Event event, StatsClient statsClient) {
+    public static EventFullDto eventToEventFullDto(Event event, StatsClient statsClient) {
+
         return EventFullDto
                 .builder()
                 .id(event.getEventId())
                 .annotation(event.getAnnotation())
                 .paid(event.getPaid())
-                .category(CategoryMapper.mapModelToDto(event.getCategory()))
+                .category(CategoryMapper.categoryToCategoryDto(event.getCategory()))
                 .confirmedRequests(CALCULATE_CONFIRMED_REQUEST_FUNC.apply(event.getRequests()))
                 .createdOn(event.getCreatedOn().format(DATE_TIME_FORMAT))
                 .description(event.getDescription())
@@ -63,23 +72,24 @@ public class EventMapper {
                 .state(event.getEventStatus())
                 .title(event.getTitle())
                 .views(GET_VIEWS_OF_EVENT_FUNC.apply(event.getEventId(), statsClient))
-                .initiator(UserMapper.mapModelToShortDto(event.getInitiator()))
-                .location(LocationMapper.mapModelToDto(event.getLocation()))
+                .initiator(UserMapper.userToUserShortDto(event.getInitiator()))
+                .location(LocationMapper.locationToLocationDto(event.getLocation()))
                 .participantLimit(event.getParticipationLimit())
                 .publishedOn(event.getPublishedOn() == null ? "" : event.getPublishedOn().format(DATE_TIME_FORMAT))
                 .requestModeration(event.getRequestModeration())
                 .build();
     }
 
-    public static EventShortDto mapModelToShortDto(Event event, StatsClient statsClient) {
+    public static EventShortDto eventToEventShortDto(Event event, StatsClient statsClient) {
+
         return EventShortDto
                 .builder()
                 .id(event.getEventId())
                 .annotation(event.getAnnotation())
-                .category(CategoryMapper.mapModelToDto(event.getCategory()))
+                .category(CategoryMapper.categoryToCategoryDto(event.getCategory()))
                 .confirmedRequests(CALCULATE_CONFIRMED_REQUEST_FUNC.apply(event.getRequests()))
                 .eventDate(event.getEventDate().format(DATE_TIME_FORMAT))
-                .initiator(UserMapper.mapModelToShortDto(event.getInitiator()))
+                .initiator(UserMapper.userToUserShortDto(event.getInitiator()))
                 .paid(event.getPaid())
                 .title(event.getTitle())
                 .views(GET_VIEWS_OF_EVENT_FUNC.apply(event.getEventId(), statsClient))

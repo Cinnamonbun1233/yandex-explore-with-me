@@ -34,80 +34,97 @@ public class RequestServiceImpl implements RequestService {
 
     @Transactional
     @Override
-    public ParticipationRequestDto addRequest(Long userId, Long eventId) {
+    public ParticipationRequestDto createNewRequest(Long userId, Long eventId) {
+
         checkIfRequestWasAlreadyCreated(userId, eventId);
         checkIfInitiatorIsCreatingRequest(userId, eventId);
-        ParticipationRequest newRequest = new ParticipationRequest();
-        Event eventFound = eventRepo.findById(eventId).orElseThrow(
-                () -> new EventNotFoundException(String.format("Event %d does not exist", eventId)));
-        checkIfEventIsPublished(eventFound);
-        checkIfParticipantLimitIsFull(eventFound);
-        newRequest.setRequester(userRepo.findById(userId).orElseThrow(
-                () -> new UserNotFoundException(String.format("User %d does not exist", userId))));
-        newRequest.setEvent(eventFound);
+        ParticipationRequest participationRequest = new ParticipationRequest();
 
-        if (eventFound.getParticipationLimit() == 0 || !eventFound.getRequestModeration()) {
-            newRequest.setRequestStatus(RequestStatus.CONFIRMED);
+        Event event = eventRepo.findById(eventId)
+                .orElseThrow(() -> new EventNotFoundException(String.format("Event %d does not exist", eventId)));
+
+        checkIfEventIsPublished(event);
+        checkIfParticipantLimitIsFull(event);
+
+        participationRequest.setRequester(userRepo.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(String.format("User %d does not exist", userId))));
+
+        participationRequest.setEvent(event);
+
+        if (event.getParticipationLimit() == 0 || !event.getRequestModeration()) {
+            participationRequest.setRequestStatus(RequestStatus.CONFIRMED);
         } else {
-            newRequest.setRequestStatus(RequestStatus.PENDING);
+            participationRequest.setRequestStatus(RequestStatus.PENDING);
         }
 
-        newRequest.setCreated(LocalDateTime.now());
-        return RequestMapper.mapModelToDto(requestRepo.save(newRequest));
+        participationRequest.setCreated(LocalDateTime.now());
+
+        return RequestMapper.participationRequestToParticipationRequestDto(requestRepo.save(participationRequest));
     }
 
+    @Transactional
     @Override
-    public List<ParticipationRequestDto> getUsersRequests(Long userId) {
-        QParticipationRequest participationRequest = QParticipationRequest.participationRequest;
-        BooleanExpression byRequesterId = participationRequest.requester.userId.eq(userId);
+    public List<ParticipationRequestDto> getUsersRequestsById(Long userId) {
+
+        QParticipationRequest qParticipationRequest = QParticipationRequest.participationRequest;
+        BooleanExpression booleanExpression = qParticipationRequest.requester.userId.eq(userId);
+
         return StreamSupport
-                .stream(requestRepo.findAll(byRequesterId).spliterator(), false)
-                .map(RequestMapper::mapModelToDto)
+                .stream(requestRepo.findAll(booleanExpression).spliterator(), false)
+                .map(RequestMapper::participationRequestToParticipationRequestDto)
                 .collect(Collectors.toList());
     }
 
     @Transactional
     @Override
-    public ParticipationRequestDto cancelOwnRequest(Long userId, Long requestId) {
+    public ParticipationRequestDto cancelOwnRequestById(Long userId, Long requestId) {
+
         checkIfUserExists(userId);
-        ParticipationRequest toBeCanceled = requestRepo.findById(requestId).orElseThrow(
-                () -> new RequestNotFoundException(String.format("Request %d does not exist", requestId)));
-        toBeCanceled.setRequestStatus(RequestStatus.CANCELED);
-        return RequestMapper.mapModelToDto(requestRepo.save(toBeCanceled));
+
+        ParticipationRequest participationRequest = requestRepo.findById(requestId)
+                .orElseThrow(() -> new RequestNotFoundException(String.format("Request %d does not exist", requestId)));
+
+        participationRequest.setRequestStatus(RequestStatus.CANCELED);
+
+        return RequestMapper.participationRequestToParticipationRequestDto(requestRepo.save(participationRequest));
     }
 
     private void checkIfUserExists(Long userId) {
-        userRepo.findById(userId).orElseThrow(
-                () -> new UserNotFoundException(String.format("User %d does not exist", userId)));
+
+        userRepo.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(String.format("User %d does not exist", userId)));
     }
 
+    private void checkIfParticipantLimitIsFull(Event event) {
 
-    private void checkIfParticipantLimitIsFull(Event eventFound) {
-        if (eventFound.getParticipationLimit() != 0) {
-            if (eventFound.getParticipationLimit() == eventFound
+        if (event.getParticipationLimit() != 0) {
+            if (event.getParticipationLimit() == event
                     .getRequests()
                     .stream()
-                    .filter(r -> r.getRequestStatus().equals(RequestStatus.CONFIRMED))
+                    .filter(participationRequest -> participationRequest.getRequestStatus().equals(RequestStatus.CONFIRMED))
                     .count()) {
-                throw new IllegalRequestException("Participant limit has been reached");
+                throw new IllegalRequestException("A participant limit has been reached");
             }
         }
     }
 
     private void checkIfEventIsPublished(Event event) {
+
         if (!event.getEventStatus().equals(EventStatus.PUBLISHED)) {
             throw new IllegalRequestException("Event has not been published yet");
         }
     }
 
     private void checkIfInitiatorIsCreatingRequest(Long userId, Long eventId) {
+
         if (Objects.equals(eventRepo.findById(eventId).orElseThrow().getInitiator().getUserId(), userId)) {
             throw new IllegalRequestException("Initiator may not create request to participate in his own event");
         }
     }
 
     private void checkIfRequestWasAlreadyCreated(Long userId, Long eventId) {
-        if (requestRepo.findByRequester_UserIdAndEvent_EventId(userId, eventId).isPresent()) {
+
+        if (requestRepo.findByRequesterUserIdAndEventEventId(userId, eventId).isPresent()) {
             throw new IllegalRequestException("Request was already created");
         }
     }

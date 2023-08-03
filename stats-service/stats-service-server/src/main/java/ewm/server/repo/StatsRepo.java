@@ -18,17 +18,17 @@ public interface StatsRepo extends JpaRepository<StatsRecord, Long> {
            "AND ((:uris) IS NULL OR r.uri IN (:uris)) " +
            "GROUP BY r.app, r.uri " +
            "ORDER BY COUNT(r.uri) DESC")
-    List<StatsResponseDto> getStatsForDatesAndUris(@Param("start") LocalDateTime start,
-                                                   @Param("end") LocalDateTime end,
+    List<StatsResponseDto> getStatsForDatesAndUris(@Param("start") LocalDateTime startPeriod,
+                                                   @Param("end") LocalDateTime endPeriod,
                                                    @Param("uris") List<String> uris);
 
-    @Query("SELECT NEW ewm.dto.StatsResponseDto(r.app, r.uri, COUNT(DISTINCT r.ip)) " +
+    @Query("SELECT NEW ewm.dto.StatsResponseDto(r.app, r.uri, COUNT(DISTINCT r.uri)) " +
            "FROM StatsRecord AS r " +
            "WHERE r.timestamp BETWEEN :start AND :end " +
            "AND ((:uris) IS NULL OR r.uri IN (:uris)) " +
            "GROUP BY r.app, r.uri " +
-           "ORDER BY COUNT(DISTINCT r.ip) DESC")
-    List<StatsResponseDto> getStatsForDatesAndUrisWithUniqueIp(@Param("start") LocalDateTime start,
-                                                               @Param("end") LocalDateTime end,
+           "ORDER BY COUNT(DISTINCT r.uri) DESC")
+    List<StatsResponseDto> getStatsForDatesAndUrisWithUniqueIp(@Param("start") LocalDateTime startPeriod,
+                                                               @Param("end") LocalDateTime endPeriod,
                                                                @Param("uris") List<String> uris);
 }

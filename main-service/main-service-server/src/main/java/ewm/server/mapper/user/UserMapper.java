@@ -6,25 +6,32 @@ import ewm.server.dto.user.UserShortDto;
 import ewm.server.model.user.User;
 
 public class UserMapper {
-    public static UserShortDto mapModelToShortDto(User model) {
-        return UserShortDto.builder()
-                .id(model.getUserId())
-                .name(model.getName())
+    public static UserShortDto userToUserShortDto(User user) {
+
+        return UserShortDto
+                .builder()
+                .id(user.getUserId())
+                .name(user.getName())
                 .build();
     }
 
-    public static User mapDtoToModel(NewUserRequest dto) {
+    public static User newUserRequestToUser(NewUserRequest newUserRequest) {
+
         User user = new User();
-        user.setName(dto.getName());
-        user.setEmail(dto.getEmail());
+
+        user.setName(newUserRequest.getName());
+        user.setEmail(newUserRequest.getEmail());
+
         return user;
     }
 
-    public static UserDto mapModelToDto(User model) {
-        return UserDto.builder()
-                .id(model.getUserId())
-                .name(model.getName())
-                .email(model.getEmail())
+    public static UserDto userToUserDto(User user) {
+
+        return UserDto
+                .builder()
+                .id(user.getUserId())
+                .name(user.getName())
+                .email(user.getEmail())
                 .build();
     }
 }

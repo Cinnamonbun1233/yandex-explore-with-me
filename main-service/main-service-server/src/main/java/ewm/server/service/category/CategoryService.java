@@ -2,17 +2,20 @@ package ewm.server.service.category;
 
 import ewm.server.dto.category.CategoryDto;
 import ewm.server.dto.category.NewCategoryDto;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 public interface CategoryService {
-    CategoryDto addCategory(NewCategoryDto newCategoryDto);
+    CategoryDto createNewCategory(NewCategoryDto newCategoryDto);
 
-    CategoryDto updateCategory(Long catId, CategoryDto categoryDto);
+    List<CategoryDto> getAllCategories(Pageable pageable);
 
-    void deleteCategory(Long catId);
+    CategoryDto getCategoryById(Long categoryId);
 
-    List<CategoryDto> getAllCategories(int from, int size);
+    CategoryDto updateCategoryById(Long categoryId, CategoryDto categoryDto);
 
-    CategoryDto getCategoryById(Long catId);
+    void deleteCategoryById(Long categoryId);
+
+
 }

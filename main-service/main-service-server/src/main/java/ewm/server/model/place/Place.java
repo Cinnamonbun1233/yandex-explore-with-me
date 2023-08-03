@@ -1,4 +1,4 @@
-package ewm.server.model.category;
+package ewm.server.model.place;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -9,15 +9,25 @@ import lombok.experimental.FieldDefaults;
 import javax.persistence.*;
 
 @Entity
+@Table(
+        name = "places",
+        schema = "public"
+)
 @Getter
 @Setter
 @ToString
-@Table(name = "categories")
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Category {
+public class Place {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long categoryId;
+    @Column(name = "place_id")
+    Long placeId;
     @Column(name = "name")
     String name;
+    @Column(name = "lat")
+    Double latitude;
+    @Column(name = "lon")
+    Double longitude;
+    @Column(name = "radius")
+    Double radius;
 }

@@ -32,7 +32,6 @@ import ewm.server.repo.request.RequestRepo;
 import ewm.server.repo.user.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,70 +59,95 @@ public class EventServiceImpl implements EventService {
 
     @Transactional
     @Override
-    public EventFullDto addEvent(Long userId, NewEventDto newEventDto) {
-        Event newEvent = EventMapper.mapDtoToModel(newEventDto);
+    public EventFullDto createNewEvent(Long userId, NewEventDto newEventDto) {
+
+        Event newEvent = EventMapper.newEventDtoToEvent(newEventDto);
+
         validateEventDate(newEvent.getEventDate());
+
         newEvent.setCategory(getCategory(newEventDto.getCategory()));
         newEvent.setLocation(saveLocation(newEventDto.getLocation()));
         newEvent.setInitiator(getInitiator(userId));
         newEvent.setCreatedOn(LocalDateTime.now());
         newEvent.setEventStatus(EventStatus.PENDING);
+
         Event savedEvent = eventRepo.save(newEvent);
-        return EventMapper.mapModelToFullDto(savedEvent, statsClient);
+
+        return EventMapper.eventToEventFullDto(savedEvent, statsClient);
     }
 
     @Transactional
     @Override
-    public EventFullDto updateEventAdmin(Long eventId, UpdateEventRequest updateEventRequest) {
-        Event toBeUpdated = getEvent(eventId);
-        updateEvent(toBeUpdated, updateEventRequest);
-        updateStatusAdmin(toBeUpdated, updateEventRequest);
-        Event savedEvent = eventRepo.save(toBeUpdated);
-        return EventMapper.mapModelToFullDto(savedEvent, statsClient);
+    public List<EventShortDto> getAllUsersEvents(Long userId, Pageable pageable) {
+
+        BooleanExpression byUserId = QEvent.event.initiator.userId.eq(userId);
+
+        return eventRepo
+                .findAll(byUserId, pageable)
+                .stream()
+                .sorted(Comparator.comparing(Event::getEventDate))
+                .map(event -> EventMapper.eventToEventShortDto(event, statsClient))
+                .collect(Collectors.toList());
     }
 
     @Transactional
     @Override
-    public EventFullDto updateEventPrivate(Long userId, Long eventId, UpdateEventRequest updateEventRequest) {
+    public List<ParticipationRequestDto> getRequestsToUsersEvent(Long userId, Long eventId) {
+
         checkIfUserExists(userId);
-        Event toBeUpdated = getEvent(eventId);
-        checkIfEventAlreadyPublished(toBeUpdated);
-        updateEvent(toBeUpdated, updateEventRequest);
-        updateStatusUser(toBeUpdated, updateEventRequest);
-        Event savedEvent = eventRepo.save(toBeUpdated);
-        return EventMapper.mapModelToFullDto(savedEvent, statsClient);
+
+        Event event = eventRepo.findById(eventId)
+                .orElseThrow(() -> new EventNotFoundException(String.format("Event %d not found", eventId)));
+
+        return event
+                .getRequests()
+                .stream()
+                .map(RequestMapper::participationRequestToParticipationRequestDto)
+                .collect(Collectors.toList());
     }
 
+    @Transactional
+    @Override
+    public EventFullDto getEventByIdPrivate(Long userId, Long eventId) {
+
+        checkIfUserExists(userId);
+
+        Event event = eventRepo.findById(eventId)
+                .orElseThrow(() -> new EventNotFoundException(String.format("Event %d not found", eventId)));
+
+        return EventMapper.eventToEventFullDto(event, statsClient);
+    }
+
+    @Transactional
+    @Override
+    public EventFullDto getEventByIdPublic(Long eventId) {
+
+        Event event = eventRepo.findByEventIdAndEventStatus(eventId, EventStatus.PUBLISHED)
+                .orElseThrow(() -> new EventNotFoundException(String.format("Event %d not found", eventId)));
+
+        return EventMapper.eventToEventFullDto(event, statsClient);
+    }
+
+    @Transactional
     @Override
     public List<EventFullDto> searchEventsAdmin(Optional<Integer[]> users,
                                                 Optional<String[]> states,
                                                 Optional<Integer[]> categories,
                                                 Optional<String> rangeStart,
                                                 Optional<String> rangeEnd,
-                                                int from,
-                                                int size) {
-        Pageable request = makePageRequest(from, size);
+                                                Pageable pageable) {
+
         BooleanExpression searchExp = makeSearchExpAdmin(users, states, categories, rangeStart, rangeEnd);
+
         return eventRepo
-                .findAll(searchExp, request)
+                .findAll(searchExp, pageable)
                 .stream()
                 .sorted(Comparator.comparing(Event::getEventDate))
-                .map(e -> EventMapper.mapModelToFullDto(e, statsClient))
+                .map(event -> EventMapper.eventToEventFullDto(event, statsClient))
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public List<EventShortDto> getAllUsersEvents(Long userId, int from, int size) {
-        Pageable request = makePageRequest(from, size);
-        BooleanExpression byUserId = QEvent.event.initiator.userId.eq(userId);
-        return eventRepo
-                .findAll(byUserId, request)
-                .stream()
-                .sorted(Comparator.comparing(Event::getEventDate))
-                .map(e -> EventMapper.mapModelToShortDto(e, statsClient))
-                .collect(Collectors.toList());
-    }
-
+    @Transactional
     @Override
     public List<EventShortDto> searchEventsPublic(Optional<String> text,
                                                   Optional<Integer[]> categories,
@@ -132,45 +156,60 @@ public class EventServiceImpl implements EventService {
                                                   Optional<String> rangeEnd,
                                                   Boolean onlyAvailable,
                                                   String sort,
-                                                  int from,
-                                                  int size) {
-        Pageable request = makePageRequest(from, size);
+                                                  Pageable pageable) {
+
         BooleanExpression searchExp = makeSearchExpPublic(text, categories, paid, rangeStart, rangeEnd);
+
         Comparator<EventShortDto> comparator = makeComparator(sort);
 
         if (onlyAvailable) {
-            return eventRepo.findAll(searchExp, request)
+            return eventRepo
+                    .findAll(searchExp, pageable)
                     .stream()
-                    .filter(e -> e.getRequests()
-                                         .stream()
-                                         .filter(r -> r.getRequestStatus().equals(RequestStatus.CONFIRMED))
-                                         .count() < e.getParticipationLimit())
-                    .map(e -> EventMapper.mapModelToShortDto(e, statsClient))
+                    .filter(event -> event
+                                             .getRequests()
+                                             .stream()
+                                             .filter(participationRequest -> participationRequest
+                                                     .getRequestStatus()
+                                                     .equals(RequestStatus.CONFIRMED))
+                                             .count() < event.getParticipationLimit())
+                    .map(event -> EventMapper.eventToEventShortDto(event, statsClient))
                     .sorted(comparator)
                     .collect(Collectors.toList());
         } else {
             return eventRepo
-                    .findAll(searchExp, request)
+                    .findAll(searchExp, pageable)
                     .stream()
-                    .map(e -> EventMapper.mapModelToShortDto(e, statsClient))
+                    .map(event -> EventMapper.eventToEventShortDto(event, statsClient))
                     .sorted(comparator)
                     .collect(Collectors.toList());
         }
     }
 
+    @Transactional
     @Override
-    public EventFullDto getEventByIdPublic(Long id) {
-        Event eventFound = eventRepo.findByEventIdAndEventStatus(id, EventStatus.PUBLISHED).orElseThrow(
-                () -> new EventNotFoundException(String.format("Event %d not found", id)));
-        return EventMapper.mapModelToFullDto(eventFound, statsClient);
+    public EventFullDto updateEventAdmin(Long eventId, UpdateEventRequest updateEventRequest) {
+
+        Event toBeUpdated = getEvent(eventId);
+        updateEvent(toBeUpdated, updateEventRequest);
+        updateStatusAdmin(toBeUpdated, updateEventRequest);
+        Event savedEvent = eventRepo.save(toBeUpdated);
+
+        return EventMapper.eventToEventFullDto(savedEvent, statsClient);
     }
 
+    @Transactional
     @Override
-    public EventFullDto getEventByIdPrivate(Long userId, Long eventId) {
+    public EventFullDto updateEventPrivate(Long userId, Long eventId, UpdateEventRequest updateEventRequest) {
+
         checkIfUserExists(userId);
-        Event eventFound = eventRepo.findById(eventId).orElseThrow(
-                () -> new EventNotFoundException(String.format("Event %d not found", eventId)));
-        return EventMapper.mapModelToFullDto(eventFound, statsClient);
+        Event toBeUpdated = getEvent(eventId);
+        checkIfEventAlreadyPublished(toBeUpdated);
+        updateEvent(toBeUpdated, updateEventRequest);
+        updateStatusUser(toBeUpdated, updateEventRequest);
+        Event savedEvent = eventRepo.save(toBeUpdated);
+
+        return EventMapper.eventToEventFullDto(savedEvent, statsClient);
     }
 
     @Transactional
@@ -178,98 +217,127 @@ public class EventServiceImpl implements EventService {
     public EventRequestStatusUpdateResult updateRequestByInitiator(Long userId,
                                                                    Long eventId,
                                                                    EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest) {
+
         checkIfUserExists(userId);
-        RequestStatus status = parseRequestStatus(eventRequestStatusUpdateRequest.getStatus());
+        RequestStatus requestStatus = parseRequestStatus(eventRequestStatusUpdateRequest.getStatus());
         List<ParticipationRequest> toBeUpdated = makeListOfRequestsToBeUpdated(eventId, eventRequestStatusUpdateRequest);
-        checkIfUpdateRequestIsValid(status, toBeUpdated);
-        toBeUpdated.forEach(r -> r.setRequestStatus(status));
+        checkIfUpdateRequestIsValid(requestStatus, toBeUpdated);
+        toBeUpdated.forEach(participationRequest -> participationRequest.setRequestStatus(requestStatus));
         List<ParticipationRequest> updatedRequests = requestRepo.saveAllAndFlush(toBeUpdated);
         rejectPendingRequestsIfParticipantLimitIsReached(updatedRequests);
 
         return EventRequestStatusUpdateResult
                 .builder()
-                .confirmedRequests(requestRepo.findAllByRequestStatusAndEvent_EventId(RequestStatus.CONFIRMED, eventId)
+                .confirmedRequests(requestRepo.findAllByRequestStatusAndEventEventId(RequestStatus.CONFIRMED, eventId)
                         .stream()
-                        .map(RequestMapper::mapModelToDto)
+                        .map(RequestMapper::participationRequestToParticipationRequestDto)
                         .collect(Collectors.toList()))
-                .rejectedRequests(requestRepo.findAllByRequestStatusAndEvent_EventId(RequestStatus.REJECTED, eventId)
+                .rejectedRequests(requestRepo.findAllByRequestStatusAndEventEventId(RequestStatus.REJECTED, eventId)
                         .stream()
-                        .map(RequestMapper::mapModelToDto)
+                        .map(RequestMapper::participationRequestToParticipationRequestDto)
                         .collect(Collectors.toList()))
                 .build();
     }
 
-    @Override
-    public List<ParticipationRequestDto> getRequestsToUsersEvent(Long userId, Long eventId) {
-        checkIfUserExists(userId);
-        Event eventFound = eventRepo.findById(eventId).orElseThrow(
-                () -> new EventNotFoundException(String.format("Event %d not found", eventId)));
-        return eventFound
-                .getRequests()
-                .stream()
-                .map(RequestMapper::mapModelToDto)
-                .collect(Collectors.toList());
-    }
-
     private void rejectPendingRequestsIfParticipantLimitIsReached(List<ParticipationRequest> updatedRequests) {
+
         updatedRequests
                 .stream()
-                .filter(r -> r.getEvent().getParticipationLimit() != 0 &&
-                             r.getEvent().getParticipationLimit() == r.getEvent().getRequests().stream()
-                                     .filter(r1 -> r1.getRequestStatus().equals(RequestStatus.CONFIRMED))
-                                     .count())
-                .filter(r -> r.getRequestStatus().equals(RequestStatus.PENDING))
-                .forEach(r -> r.setRequestStatus(RequestStatus.REJECTED));
+                .filter(participationRequest -> participationRequest
+                                                        .getEvent()
+                                                        .getParticipationLimit() != 0 && participationRequest
+                                                                                                 .getEvent()
+                                                                                                 .getParticipationLimit() == participationRequest
+                                                                                                 .getEvent()
+                                                                                                 .getRequests()
+                                                                                                 .stream()
+                                                                                                 .filter(request -> request
+                                                                                                         .getRequestStatus()
+                                                                                                         .equals(RequestStatus.CONFIRMED))
+                                                                                                 .count())
+                .filter(participationRequest -> participationRequest
+                        .getRequestStatus()
+                        .equals(RequestStatus.PENDING))
+                .forEach(participationRequest -> participationRequest
+                        .setRequestStatus(RequestStatus.REJECTED));
+
         requestRepo.saveAllAndFlush(updatedRequests);
     }
 
-    private void checkIfUpdateRequestIsValid(RequestStatus status, List<ParticipationRequest> toBeUpdated) {
+    private void checkIfUpdateRequestIsValid(RequestStatus requestStatus, List<ParticipationRequest> toBeUpdated) {
 
-        if (toBeUpdated.stream().anyMatch(r -> !r.getRequestStatus().equals(RequestStatus.PENDING))) {
+        if (toBeUpdated
+                .stream()
+                .anyMatch(participationRequest -> !participationRequest
+                        .getRequestStatus()
+                        .equals(RequestStatus.PENDING))) {
             throw new IllegalRequestException("Status update is available for pending requests only");
         }
 
-        if (status.equals(RequestStatus.CONFIRMED) && toBeUpdated.stream()
-                .anyMatch(r -> r.getEvent().getParticipationLimit() != 0 &&
-                               r.getEvent().getParticipationLimit() == r.getEvent()
-                                       .getRequests()
-                                       .stream()
-                                       .filter(r1 -> r1.getRequestStatus().equals(RequestStatus.CONFIRMED))
-                                       .count())
+        if (requestStatus
+                    .equals(RequestStatus.CONFIRMED) && toBeUpdated
+                    .stream()
+                    .anyMatch(participationRequest -> participationRequest
+                                                              .getEvent()
+                                                              .getParticipationLimit() != 0 &&
+                                                      participationRequest
+                                                              .getEvent()
+                                                              .getParticipationLimit() == participationRequest
+                                                              .getEvent()
+                                                              .getRequests()
+                                                              .stream()
+                                                              .filter(request -> request
+                                                                      .getRequestStatus()
+                                                                      .equals(RequestStatus.CONFIRMED))
+                                                              .count())
         ) {
             throw new IllegalRequestException("Participant limit to one of events has been already reached");
         }
     }
 
-    private void validateEventDate(LocalDateTime eventDate) {
-        if (LocalDateTime.now().minusHours(2).isAfter(eventDate) || eventDate.isBefore(LocalDateTime.now())) {
+    private void validateEventDate(LocalDateTime localDateTime) {
+
+        if (LocalDateTime
+                    .now()
+                    .minusHours(2)
+                    .isAfter(localDateTime) || localDateTime
+                    .isBefore(LocalDateTime.now())) {
             throw new IllegalDatesException("Event date has to be at least 2 hours after current moment");
         }
     }
 
     private List<ParticipationRequest> makeListOfRequestsToBeUpdated(Long eventId,
-                                                                     EventRequestStatusUpdateRequest request) {
-        QParticipationRequest qRequest = QParticipationRequest.participationRequest;
-        BooleanExpression exp = qRequest.event.eventId.eq(eventId)
-                .and(qRequest.requestId.in(request.getRequestIds()));
+                                                                     EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest) {
+
+        QParticipationRequest qParticipationRequest = QParticipationRequest.participationRequest;
+        BooleanExpression booleanExpression = qParticipationRequest
+                .event
+                .eventId
+                .eq(eventId)
+                .and(qParticipationRequest.requestId.in(eventRequestStatusUpdateRequest.getRequestIds()));
+
         return StreamSupport
-                .stream(requestRepo.findAll(exp).spliterator(), false)
+                .stream(requestRepo.findAll(booleanExpression).spliterator(), false)
                 .collect(Collectors.toList());
     }
 
     private RequestStatus parseRequestStatus(String status) {
+
         try {
             return RequestStatus.valueOf(status);
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException illegalArgumentException) {
             throw new UnknownActionException("Status is unknown");
         }
     }
 
     private Comparator<EventShortDto> makeComparator(String sort) {
-        SortType sorting = parseSortType(sort);
-        if (sorting.equals(SortType.VIEWS)) {
+
+        SortType sortType = parseSortType(sort);
+
+        if (sortType.equals(SortType.VIEWS)) {
             return Comparator.comparing(EventShortDto::getViews);
         }
+
         return Comparator.comparing(EventShortDto::getEventDate);
     }
 
@@ -279,16 +347,18 @@ public class EventServiceImpl implements EventService {
                                                  Optional<Integer[]> categories,
                                                  Optional<String> rangeStart,
                                                  Optional<String> rangeEnd) {
+
         QEvent qEvent = QEvent.event;
-        BooleanBuilder builder = new BooleanBuilder();
-        users.ifPresent(userIds -> builder.and(qEvent.initiator.userId.in(userIds)));
-        states.ifPresent(stateStrings -> builder.and(qEvent.eventStatus.in(Arrays.stream(states.get())
+        BooleanBuilder booleanBuilder = new BooleanBuilder();
+        users.ifPresent(userIds -> booleanBuilder.and(qEvent.initiator.userId.in(userIds)));
+        states.ifPresent(stateStrings -> booleanBuilder.and(qEvent.eventStatus.in(Arrays.stream(states.get())
                 .map(this::parseEventStatus)
                 .toArray(EventStatus[]::new))));
-        categories.ifPresent(categoryIds -> builder.and(qEvent.category.categoryId.in(categoryIds)));
-        rangeStart.ifPresent(start -> builder.and(qEvent.eventDate.after(parseDateTime(start))));
-        rangeEnd.ifPresent(end -> builder.and(qEvent.eventDate.before(parseDateTime(end))));
-        return builder.getValue() != null ? Expressions.asBoolean(builder.getValue()) : qEvent.isNotNull();
+        categories.ifPresent(categoryIds -> booleanBuilder.and(qEvent.category.categoryId.in(categoryIds)));
+        rangeStart.ifPresent(start -> booleanBuilder.and(qEvent.eventDate.after(parseDateTime(start))));
+        rangeEnd.ifPresent(end -> booleanBuilder.and(qEvent.eventDate.before(parseDateTime(end))));
+
+        return booleanBuilder.getValue() != null ? Expressions.asBoolean(booleanBuilder.getValue()) : qEvent.isNotNull();
     }
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
@@ -297,14 +367,17 @@ public class EventServiceImpl implements EventService {
                                                   Optional<Boolean> paid,
                                                   Optional<String> rangeStart,
                                                   Optional<String> rangeEnd) {
+
         QEvent qEvent = QEvent.event;
         BooleanBuilder builder = new BooleanBuilder();
         builder.and(qEvent.eventStatus.eq(EventStatus.PUBLISHED));
+
         text.ifPresent(str -> {
             BooleanExpression annotationContainsText = qEvent.annotation.likeIgnoreCase(str);
             BooleanExpression descriptionContainsText = qEvent.description.likeIgnoreCase(str);
             builder.and(annotationContainsText.or(descriptionContainsText));
         });
+
         categories.ifPresent(categoryIds -> builder.and(qEvent.category.categoryId.in(categoryIds)));
 
         if (rangeStart.isPresent() && rangeEnd.isPresent()) {
@@ -319,41 +392,49 @@ public class EventServiceImpl implements EventService {
         }
 
         paid.ifPresent(bool -> builder.and(qEvent.paid.eq(bool)));
+
         return Expressions.asBoolean(builder.getValue());
     }
 
-    private void validateSearchDates(String rangeStart, String rangeEnd) {
-        if (parseDateTime(rangeStart).isAfter(parseDateTime(rangeEnd))) {
+    private void validateSearchDates(String startPeriod, String endPeriod) {
+
+        if (parseDateTime(startPeriod).isAfter(parseDateTime(endPeriod))) {
             throw new IllegalDatesException("Range start has to be after range end");
         }
     }
 
     private Location saveLocation(LocationDto locationDto) {
-        return locationRepo.save(LocationMapper.mapDtoToModel(locationDto));
+
+        return locationRepo.save(LocationMapper.locationDtoToLocation(locationDto));
     }
 
     private Category getCategory(Integer categoryId) {
-        return categoryRepo.findById(categoryId.longValue()).orElseThrow(
-                () -> new CategoryNotFoundException(String.format("Category %d does not exist", categoryId)));
+
+        return categoryRepo.findById(categoryId.longValue())
+                .orElseThrow(() -> new CategoryNotFoundException(String.format("Category %d does not exist", categoryId)));
     }
 
     private User getInitiator(Long userId) {
-        return userRepo.findById(userId).orElseThrow(
-                () -> new UserNotFoundException(String.format("User %d does not exist", userId)));
+
+        return userRepo.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(String.format("User %d does not exist", userId)));
     }
 
     private Event getEvent(Long eventId) {
-        return eventRepo.findById(eventId).orElseThrow(
-                () -> new EventNotFoundException(String.format("Event %d does not exist", eventId)));
+
+        return eventRepo.findById(eventId)
+                .orElseThrow(() -> new EventNotFoundException(String.format("Event %d does not exist", eventId)));
     }
 
     private void checkIfUserExists(Long userId) {
+
         if (!userRepo.existsById(userId)) {
             throw new UserNotFoundException(String.format("User %d does not exist", userId));
         }
     }
 
     private void updateEvent(Event toBeUpdated, UpdateEventRequest updateEventRequest) {
+
         updateDescription(toBeUpdated, updateEventRequest);
         updateAnnotation(toBeUpdated, updateEventRequest);
         updateParticipantLimit(toBeUpdated, updateEventRequest);
@@ -365,14 +446,19 @@ public class EventServiceImpl implements EventService {
     }
 
     private void updateStatusAdmin(Event toBeUpdated, UpdateEventRequest updateEventRequest) {
+
         if (updateEventRequest.getStateAction() != null) {
-            StateAdminAction action = parseActionAdmin(updateEventRequest.getStateAction());
-            switch (action) {
+
+            StateAdminAction stateAdminAction = parseActionAdmin(updateEventRequest.getStateAction());
+
+            switch (stateAdminAction) {
+
                 case PUBLISH_EVENT:
                     checkIfEventAlreadyPublished(toBeUpdated);
                     checkIfEventIsCanceled(toBeUpdated);
                     toBeUpdated.setEventStatus(EventStatus.PUBLISHED);
                     break;
+
                 case REJECT_EVENT:
                     checkIfEventAlreadyPublished(toBeUpdated);
                     toBeUpdated.setEventStatus(EventStatus.CANCELED);
@@ -382,25 +468,32 @@ public class EventServiceImpl implements EventService {
     }
 
     private void checkIfEventIsCanceled(Event toBeUpdated) {
+
         if (toBeUpdated.getEventStatus().equals(EventStatus.CANCELED)) {
             throw new IllegalPublicationException("Event is canceled and may not be published");
         }
     }
 
     private void checkIfEventAlreadyPublished(Event toBeUpdated) {
+
         if (toBeUpdated.getEventStatus().equals(EventStatus.PUBLISHED)) {
             throw new IllegalPublicationException("Event is already published");
         }
     }
 
     private void updateStatusUser(Event toBeUpdated, UpdateEventRequest updateEventRequest) {
+
         if (updateEventRequest.getStateAction() != null) {
-            StateUserAction action = parseActionUser(updateEventRequest.getStateAction());
-            switch (action) {
+
+            StateUserAction stateUserAction = parseActionUser(updateEventRequest.getStateAction());
+
+            switch (stateUserAction) {
+
                 case CANCEL_REVIEW:
                     checkIfEventAlreadyPublished(toBeUpdated);
                     toBeUpdated.setEventStatus(EventStatus.CANCELED);
                     break;
+
                 case SEND_TO_REVIEW:
                     toBeUpdated.setEventStatus(EventStatus.PENDING);
                     break;
@@ -409,6 +502,7 @@ public class EventServiceImpl implements EventService {
     }
 
     private StateAdminAction parseActionAdmin(String stateAction) {
+
         try {
             return StateAdminAction.valueOf(stateAction);
         } catch (IllegalArgumentException e) {
@@ -417,6 +511,7 @@ public class EventServiceImpl implements EventService {
     }
 
     private StateUserAction parseActionUser(String stateAction) {
+
         try {
             return StateUserAction.valueOf(stateAction);
         } catch (IllegalArgumentException e) {
@@ -425,7 +520,9 @@ public class EventServiceImpl implements EventService {
     }
 
     private void updateLocation(Event toBeUpdated, UpdateEventRequest updateEventRequest) {
+
         if (updateEventRequest.getLocation() != null) {
+
             if (!(updateEventRequest.getLocation().getLat().equals(toBeUpdated.getLocation().getLat()) &&
                   updateEventRequest.getLocation().getLon().equals(toBeUpdated.getLocation().getLon()))) {
                 toBeUpdated.setLocation(saveLocation(updateEventRequest.getLocation()));
@@ -434,15 +531,19 @@ public class EventServiceImpl implements EventService {
     }
 
     private void updateEventDate(Event toBeUpdated, UpdateEventRequest updateEventRequest) {
+
         if (updateEventRequest.getEventDate() != null) {
-            LocalDateTime newDateTime = LocalDateTime.parse(updateEventRequest.getEventDate(),
+
+            LocalDateTime localDateTime = LocalDateTime.parse(updateEventRequest.getEventDate(),
                     DateTimeFormatter.ofPattern(dateTimePattern));
-            validateEventDate(newDateTime);
-            toBeUpdated.setEventDate(newDateTime);
+
+            validateEventDate(localDateTime);
+            toBeUpdated.setEventDate(localDateTime);
         }
     }
 
     private void updateCategory(Event toBeUpdated, UpdateEventRequest updateEventRequest) {
+
         if (updateEventRequest.getCategory() != null) {
             if (!(updateEventRequest.getCategory().longValue() == toBeUpdated.getCategory().getCategoryId())) {
                 toBeUpdated.setCategory(getCategory(updateEventRequest.getCategory()));
@@ -451,36 +552,42 @@ public class EventServiceImpl implements EventService {
     }
 
     private void updatePaid(Event toBeUpdated, UpdateEventRequest updateEventRequest) {
+
         if (updateEventRequest.getPaid() != null) {
             toBeUpdated.setPaid(updateEventRequest.getPaid());
         }
     }
 
     private void updateTitle(Event toBeUpdated, UpdateEventRequest updateEventRequest) {
+
         if (updateEventRequest.getTitle() != null) {
             toBeUpdated.setTitle(updateEventRequest.getTitle());
         }
     }
 
     private void updateParticipantLimit(Event toBeUpdated, UpdateEventRequest updateEventRequest) {
+
         if (updateEventRequest.getParticipantLimit() != null) {
             toBeUpdated.setParticipationLimit(updateEventRequest.getParticipantLimit());
         }
     }
 
     private void updateAnnotation(Event toBeUpdated, UpdateEventRequest updateEventRequest) {
+
         if (updateEventRequest.getAnnotation() != null) {
             toBeUpdated.setAnnotation(updateEventRequest.getAnnotation());
         }
     }
 
     private void updateDescription(Event toBeUpdated, UpdateEventRequest updateEventRequest) {
+
         if (updateEventRequest.getDescription() != null) {
             toBeUpdated.setDescription(updateEventRequest.getDescription());
         }
     }
 
     private EventStatus parseEventStatus(String eventStatus) {
+
         try {
             return EventStatus.valueOf(eventStatus);
         } catch (IllegalArgumentException e) {
@@ -489,6 +596,7 @@ public class EventServiceImpl implements EventService {
     }
 
     private SortType parseSortType(String sort) {
+
         try {
             return SortType.valueOf(sort);
         } catch (IllegalArgumentException e) {
@@ -496,11 +604,8 @@ public class EventServiceImpl implements EventService {
         }
     }
 
-    private Pageable makePageRequest(int from, int size) {
-        return PageRequest.of(from > 0 ? from / size : 0, size);
-    }
-
     private LocalDateTime parseDateTime(String dateTimeString) {
+
         return LocalDateTime.parse(dateTimeString, DateTimeFormatter.ofPattern(dateTimePattern));
     }
 }

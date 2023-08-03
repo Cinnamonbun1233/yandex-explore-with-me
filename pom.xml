@@ -3,24 +3,24 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <name>Explore With Me</name>
-
-    <groupId>ru.practicum</groupId>
-    <artifactId>explore-with-me</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <packaging>pom</packaging>
-
-    <modules>
-        <module>stats-service</module>
-        <module>main-service</module>
-    </modules>
-
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>2.7.5</version>
         <relativePath/>
     </parent>
+
+    <groupId>ru.practicum</groupId>
+    <artifactId>explore-with-me</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>Explore With Me</name>
+
+    <modules>
+        <module>stats-service</module>
+        <module>main-service</module>
+    </modules>
 
     <properties>
         <java.version>11</java.version>
@@ -49,6 +49,13 @@
                         <logViolationsToConsole>true</logViolationsToConsole>
                         <includeTestSourceDirectory>true</includeTestSourceDirectory>
                     </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.puppycrawl.tools</groupId>
+                            <artifactId>checkstyle</artifactId>
+                            <version>10.3</version>
+                        </dependency>
+                    </dependencies>
                     <executions>
                         <execution>
                             <goals>
@@ -57,13 +64,6 @@
                             <phase>compile</phase>
                         </execution>
                     </executions>
-                    <dependencies>
-                        <dependency>
-                            <groupId>com.puppycrawl.tools</groupId>
-                            <artifactId>checkstyle</artifactId>
-                            <version>10.3</version>
-                        </dependency>
-                    </dependencies>
                 </plugin>
                 <plugin>
                     <groupId>com.github.spotbugs</groupId>
@@ -142,10 +142,10 @@
                         </execution>
                         <execution>
                             <id>jacoco-site</id>
-                            <phase>install</phase>
                             <goals>
                                 <goal>report</goal>
                             </goals>
+                            <phase>install</phase>
                         </execution>
                     </executions>
                 </plugin>

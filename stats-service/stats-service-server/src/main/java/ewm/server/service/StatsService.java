@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 public interface StatsService {
-    void saveRecord(StatsRequestDto statsRequestDto, HttpServletRequest httpServletRequest);
+    void createNewRecord(StatsRequestDto statsRequestDto, HttpServletRequest httpServletRequest);
 
-    List<StatsResponseDto> getStats(String start, String end, List<String> uris, Boolean unique);
+    List<StatsResponseDto> getStats(String startPeriod, String endPeriod, List<String> uris, Boolean unique);
 }

@@ -5,9 +5,9 @@ import ewm.server.dto.request.ParticipationRequestDto;
 import java.util.List;
 
 public interface RequestService {
-    ParticipationRequestDto addRequest(Long userId, Long eventId);
+    ParticipationRequestDto createNewRequest(Long userId, Long eventId);
 
-    ParticipationRequestDto cancelOwnRequest(Long userId, Long requestId);
+    List<ParticipationRequestDto> getUsersRequestsById(Long userId);
 
-    List<ParticipationRequestDto> getUsersRequests(Long userId);
+    ParticipationRequestDto cancelOwnRequestById(Long userId, Long requestId);
 }

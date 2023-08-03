@@ -3,18 +3,19 @@ package ewm.server.service.compilation;
 import ewm.server.dto.compilation.CompilationDto;
 import ewm.server.dto.compilation.NewCompilationDto;
 import ewm.server.dto.compilation.UpdateCompilationRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface CompilationService {
-    CompilationDto addCompilation(NewCompilationDto newCompilationDto);
+    CompilationDto createNewCompilation(NewCompilationDto newCompilationDto);
 
-    CompilationDto updateCompilation(Long compId, UpdateCompilationRequest updateCompilationRequest);
+    List<CompilationDto> getAllCompilations(Optional<Boolean> pinned, Pageable pageable);
 
-    CompilationDto getCompilationById(Long compId);
+    CompilationDto getCompilationById(Long compilationId);
 
-    List<CompilationDto> getAllCompilations(Optional<Boolean> pinned, int from, int size);
+    CompilationDto updateCompilationById(Long compilationId, UpdateCompilationRequest updateCompilationRequest);
 
-    void deleteCompilation(Long compId);
+    void deleteCompilationById(Long compilationId);
 }

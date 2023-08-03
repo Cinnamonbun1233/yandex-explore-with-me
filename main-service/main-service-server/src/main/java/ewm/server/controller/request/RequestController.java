@@ -21,19 +21,28 @@ public class RequestController {
     }
 
     @PostMapping
-    public ResponseEntity<ParticipationRequestDto> addRequest(@PathVariable("userId") Long userId,
-                                                              @RequestParam("eventId") Long eventId) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(requestService.addRequest(userId, eventId));
+    public ResponseEntity<ParticipationRequestDto> createNewRequest(@PathVariable("userId") Long userId,
+                                                                    @RequestParam("eventId") Long eventId) {
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(requestService.createNewRequest(userId, eventId));
     }
 
     @PatchMapping(value = CANCEL_OWN_REQUEST_PATH)
-    public ResponseEntity<ParticipationRequestDto> cancelOwnRequest(@PathVariable("userId") Long userId,
-                                                                    @PathVariable("requestId") Long requestId) {
-        return ResponseEntity.ok().body(requestService.cancelOwnRequest(userId, requestId));
+    public ResponseEntity<ParticipationRequestDto> cancelOwnRequestById(@PathVariable("userId") Long userId,
+                                                                        @PathVariable("requestId") Long requestId) {
+
+        return ResponseEntity
+                .ok()
+                .body(requestService.cancelOwnRequestById(userId, requestId));
     }
 
     @GetMapping
-    public ResponseEntity<List<ParticipationRequestDto>> getUsersRequests(@PathVariable("userId") Long userId) {
-        return ResponseEntity.ok().body(requestService.getUsersRequests(userId));
+    public ResponseEntity<List<ParticipationRequestDto>> getUsersRequestsById(@PathVariable("userId") Long userId) {
+
+        return ResponseEntity
+                .ok()
+                .body(requestService.getUsersRequestsById(userId));
     }
 }
